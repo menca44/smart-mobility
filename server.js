@@ -7,7 +7,13 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
-
+console.log("Configurazione MySQL Railway:", {
+  host: process.env.MYSQLHOST || process.env.DB_HOST || "localhost",
+  user: process.env.MYSQLUSER || process.env.DB_USER || "root",
+  database: process.env.MYSQLDATABASE || process.env.DB_NAME || "movelands",
+  port: process.env.MYSQLPORT || process.env.DB_PORT || 3306,
+  hasPassword: Boolean(process.env.MYSQLPASSWORD || process.env.DB_PASSWORD)
+});
 const db = mysql.createPool({
   host: process.env.MYSQLHOST || process.env.DB_HOST || "localhost",
   user: process.env.MYSQLUSER || process.env.DB_USER || "root",
