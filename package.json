@@ -1,18 +1,23 @@
 {
-  "name": "codice-sito-web",
+  "name": "smart-mobility",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Applicazione web MoveLanDs per smart mobility con Node.js, Express e MySQL",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "dev": "node server.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "smart-mobility",
+    "node",
+    "express",
+    "mysql",
+    "movelands"
+  ],
+  "author": "Leonardo Mencattini",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "express": "^5.2.1",
-    "mysql2": "^3.22.4",
-    "sqlite3": "^6.0.1"
+    "express": "^4.19.2",
+    "mysql2": "^3.11.0"
   }
 }

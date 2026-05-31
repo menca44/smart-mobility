@@ -3,16 +3,17 @@ const mysql = require("mysql2");
 const path = require("path");
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "",
-  database: "movelands"
+  host: process.env.MYSQLHOST || process.env.DB_HOST || "localhost",
+  user: process.env.MYSQLUSER || process.env.DB_USER || "root",
+  password: process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || "",
+  database: process.env.MYSQLDATABASE || process.env.DB_NAME || "movelands",
+  port: process.env.MYSQLPORT || process.env.DB_PORT || 3306
 });
 
 db.connect((err) => {
@@ -582,8 +583,21 @@ app.post("/api/carte", (req, res) => {
     return;
   }
 
-  if (numeroPulito.length < 12 || numeroPulito.length > 19) {
-    res.status(400).json({ error: "Numero carta non valido" });
+  if (numeroPulito.length !== 12) {
+    res.status(400).json({ error: "Il numero carta deve contenere esattamente 12 cifre" });
+    return;
+  }
+
+  if (!/^\d{2}\/\d{4}$/.test(scadenza)) {
+    res.status(400).json({ error: "La scadenza deve essere nel formato MM/AAAA" });
+    return;
+  }
+
+  const mese = Number(scadenza.slice(0, 2));
+  const anno = Number(scadenza.slice(3, 7));
+
+  if (mese < 1 || mese > 12 || anno < 2024 || anno > 2100) {
+    res.status(400).json({ error: "Scadenza carta non valida" });
     return;
   }
 
@@ -818,5 +832,5 @@ app.get("/api/segnalazioni", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server avviato su http://localhost:${PORT}`);
+  console.log(`Server avviato sulla porta ${PORT}`);
 });
