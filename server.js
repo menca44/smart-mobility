@@ -8,21 +8,31 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-const db = mysql.createConnection({
+const db = mysql.createPool({
   host: process.env.MYSQLHOST || process.env.DB_HOST || "localhost",
   user: process.env.MYSQLUSER || process.env.DB_USER || "root",
   password: process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || "",
   database: process.env.MYSQLDATABASE || process.env.DB_NAME || "movelands",
-  port: process.env.MYSQLPORT || process.env.DB_PORT || 3306
+  port: Number(process.env.MYSQLPORT || process.env.DB_PORT || 3306),
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
-db.connect((err) => {
+db.getConnection((err, connection) => {
   if (err) {
     console.error("Errore connessione MySQL:", err.message);
+    console.error("Dati connessione usati:", {
+      host: process.env.MYSQLHOST || process.env.DB_HOST || "localhost",
+      user: process.env.MYSQLUSER || process.env.DB_USER || "root",
+      database: process.env.MYSQLDATABASE || process.env.DB_NAME || "movelands",
+      port: process.env.MYSQLPORT || process.env.DB_PORT || 3306
+    });
     return;
   }
 
   console.log("Database MySQL collegato correttamente.");
+  connection.release();
 });
 
 app.get("/", (req, res) => {
@@ -47,7 +57,10 @@ app.get("/api/mezzi-debug", (req, res) => {
   db.query(sql, (err, rows) => {
     if (err) {
       console.error("Errore recupero mezzi-debug:", err.message);
-      res.status(500).json({ error: "Errore nel recupero dei mezzi" });
+      res.status(500).json({
+        error: "Errore nel recupero dei mezzi",
+        dettaglio: err.message
+      });
       return;
     }
 
@@ -73,7 +86,10 @@ app.get("/api/mezzi", (req, res) => {
   db.query(sql, (err, rows) => {
     if (err) {
       console.error("Errore recupero mezzi:", err.message);
-      res.status(500).json({ error: "Errore nel recupero dei mezzi" });
+      res.status(500).json({
+        error: "Errore nel recupero dei mezzi",
+        dettaglio: err.message
+      });
       return;
     }
 
@@ -101,7 +117,8 @@ app.post("/api/registrazione", (req, res) => {
     if (err) {
       console.error("Errore controllo email:", err.message);
       res.status(500).json({
-        error: "Errore durante il controllo dell'email"
+        error: "Errore durante il controllo dell'email",
+        dettaglio: err.message
       });
       return;
     }
@@ -128,7 +145,8 @@ app.post("/api/registrazione", (req, res) => {
       if (err) {
         console.error("Errore registrazione utente:", err.message);
         res.status(500).json({
-          error: "Errore durante la registrazione"
+          error: "Errore durante la registrazione",
+          dettaglio: err.message
         });
         return;
       }
@@ -172,7 +190,8 @@ app.post("/api/login", (req, res) => {
     if (err) {
       console.error("Errore login:", err.message);
       res.status(500).json({
-        error: "Errore durante il login"
+        error: "Errore durante il login",
+        dettaglio: err.message
       });
       return;
     }
@@ -208,7 +227,8 @@ app.get("/api/utenti", (req, res) => {
     if (err) {
       console.error("Errore recupero utenti:", err.message);
       res.status(500).json({
-        error: "Errore nel recupero degli utenti"
+        error: "Errore nel recupero degli utenti",
+        dettaglio: err.message
       });
       return;
     }
@@ -237,7 +257,8 @@ app.post("/api/prenotazioni", (req, res) => {
     if (err) {
       console.error("Errore controllo mezzo:", err.message);
       res.status(500).json({
-        error: "Errore nel controllo del mezzo"
+        error: "Errore nel controllo del mezzo",
+        dettaglio: err.message
       });
       return;
     }
@@ -272,7 +293,8 @@ app.post("/api/prenotazioni", (req, res) => {
       if (err) {
         console.error("Errore creazione prenotazione:", err.message);
         res.status(500).json({
-          error: "Errore nella creazione della prenotazione"
+          error: "Errore nella creazione della prenotazione",
+          dettaglio: err.message
         });
         return;
       }
@@ -289,7 +311,8 @@ app.post("/api/prenotazioni", (req, res) => {
         if (err) {
           console.error("Errore aggiornamento mezzo:", err.message);
           res.status(500).json({
-            error: "Prenotazione creata, ma errore aggiornamento mezzo"
+            error: "Prenotazione creata, ma errore aggiornamento mezzo",
+            dettaglio: err.message
           });
           return;
         }
@@ -334,7 +357,8 @@ app.get("/api/prenotazioni", (req, res) => {
     if (err) {
       console.error("Errore recupero prenotazioni:", err.message);
       res.status(500).json({
-        error: "Errore nel recupero delle prenotazioni"
+        error: "Errore nel recupero delle prenotazioni",
+        dettaglio: err.message
       });
       return;
     }
@@ -371,7 +395,8 @@ app.get("/api/prenotazioni/utente/:id_utente", (req, res) => {
     if (err) {
       console.error("Errore recupero prenotazioni attive utente:", err.message);
       res.status(500).json({
-        error: "Errore nel recupero delle prenotazioni attive dell'utente"
+        error: "Errore nel recupero delle prenotazioni attive dell'utente",
+        dettaglio: err.message
       });
       return;
     }
@@ -408,7 +433,8 @@ app.get("/api/prenotazioni/utente/:id_utente/storico", (req, res) => {
     if (err) {
       console.error("Errore recupero storico prenotazioni:", err.message);
       res.status(500).json({
-        error: "Errore nel recupero dello storico prenotazioni"
+        error: "Errore nel recupero dello storico prenotazioni",
+        dettaglio: err.message
       });
       return;
     }
@@ -433,7 +459,8 @@ app.put("/api/prenotazioni/:id_prenotazione/termina", (req, res) => {
     if (err) {
       console.error("Errore ricerca prenotazione:", err.message);
       res.status(500).json({
-        error: "Errore durante la ricerca della prenotazione"
+        error: "Errore durante la ricerca della prenotazione",
+        dettaglio: err.message
       });
       return;
     }
@@ -464,7 +491,8 @@ app.put("/api/prenotazioni/:id_prenotazione/termina", (req, res) => {
       if (err) {
         console.error("Errore aggiornamento prenotazione:", err.message);
         res.status(500).json({
-          error: "Errore durante la terminazione della prenotazione"
+          error: "Errore durante la terminazione della prenotazione",
+          dettaglio: err.message
         });
         return;
       }
@@ -479,7 +507,8 @@ app.put("/api/prenotazioni/:id_prenotazione/termina", (req, res) => {
         if (err) {
           console.error("Errore aggiornamento mezzo:", err.message);
           res.status(500).json({
-            error: "Prenotazione terminata, ma errore nel rendere disponibile il mezzo"
+            error: "Prenotazione terminata, ma errore nel rendere disponibile il mezzo",
+            dettaglio: err.message
           });
           return;
         }
@@ -510,7 +539,10 @@ app.get("/api/portafoglio/:id_utente", (req, res) => {
   db.query(cercaSql, [idUtente], (err, rows) => {
     if (err) {
       console.error("Errore recupero portafoglio:", err.message);
-      res.status(500).json({ error: "Errore nel recupero del portafoglio" });
+      res.status(500).json({
+        error: "Errore nel recupero del portafoglio",
+        dettaglio: err.message
+      });
       return;
     }
 
@@ -527,7 +559,10 @@ app.get("/api/portafoglio/:id_utente", (req, res) => {
     db.query(creaSql, [idUtente], (err, result) => {
       if (err) {
         console.error("Errore creazione portafoglio:", err.message);
-        res.status(500).json({ error: "Errore nella creazione del portafoglio" });
+        res.status(500).json({
+          error: "Errore nella creazione del portafoglio",
+          dettaglio: err.message
+        });
         return;
       }
 
@@ -560,7 +595,10 @@ app.get("/api/carte/:id_utente", (req, res) => {
   db.query(sql, [idUtente], (err, rows) => {
     if (err) {
       console.error("Errore recupero carte:", err.message);
-      res.status(500).json({ error: "Errore nel recupero delle carte" });
+      res.status(500).json({
+        error: "Errore nel recupero delle carte",
+        dettaglio: err.message
+      });
       return;
     }
 
@@ -572,24 +610,32 @@ app.post("/api/carte", (req, res) => {
   const { id_utente, intestatario, numero_carta, circuito, scadenza } = req.body;
 
   if (!id_utente || !intestatario || !numero_carta || !circuito || !scadenza) {
-    res.status(400).json({ error: "Tutti i campi della carta sono obbligatori" });
+    res.status(400).json({
+      error: "Tutti i campi della carta sono obbligatori"
+    });
     return;
   }
 
   const numeroPulito = String(numero_carta).replace(/\s+/g, "");
 
   if (!/^[0-9]+$/.test(numeroPulito)) {
-    res.status(400).json({ error: "Il numero carta deve contenere solo cifre" });
+    res.status(400).json({
+      error: "Il numero carta deve contenere solo cifre"
+    });
     return;
   }
 
   if (numeroPulito.length !== 12) {
-    res.status(400).json({ error: "Il numero carta deve contenere esattamente 12 cifre" });
+    res.status(400).json({
+      error: "Il numero carta deve contenere esattamente 12 cifre"
+    });
     return;
   }
 
   if (!/^\d{2}\/\d{4}$/.test(scadenza)) {
-    res.status(400).json({ error: "La scadenza deve essere nel formato MM/AAAA" });
+    res.status(400).json({
+      error: "La scadenza deve essere nel formato MM/AAAA"
+    });
     return;
   }
 
@@ -597,7 +643,9 @@ app.post("/api/carte", (req, res) => {
   const anno = Number(scadenza.slice(3, 7));
 
   if (mese < 1 || mese > 12 || anno < 2024 || anno > 2100) {
-    res.status(400).json({ error: "Scadenza carta non valida" });
+    res.status(400).json({
+      error: "Scadenza carta non valida"
+    });
     return;
   }
 
@@ -617,7 +665,10 @@ app.post("/api/carte", (req, res) => {
   db.query(sql, [id_utente, intestatario, circuito, ultimeQuattro, scadenza], (err, result) => {
     if (err) {
       console.error("Errore aggiunta carta:", err.message);
-      res.status(500).json({ error: "Errore durante il salvataggio della carta" });
+      res.status(500).json({
+        error: "Errore durante il salvataggio della carta",
+        dettaglio: err.message
+      });
       return;
     }
 
@@ -642,7 +693,9 @@ app.post("/api/portafoglio/ricarica", (req, res) => {
   const importoNumerico = Number(importo);
 
   if (Number.isNaN(importoNumerico) || importoNumerico <= 0) {
-    res.status(400).json({ error: "Importo non valido" });
+    res.status(400).json({
+      error: "Importo non valido"
+    });
     return;
   }
 
@@ -660,7 +713,10 @@ app.post("/api/portafoglio/ricarica", (req, res) => {
   db.query(verificaCartaSql, [id_carta, id_utente], (err, carte) => {
     if (err) {
       console.error("Errore verifica carta:", err.message);
-      res.status(500).json({ error: "Errore durante la verifica della carta" });
+      res.status(500).json({
+        error: "Errore durante la verifica della carta",
+        dettaglio: err.message
+      });
       return;
     }
 
@@ -682,7 +738,10 @@ app.post("/api/portafoglio/ricarica", (req, res) => {
     db.query(contaRicaricheSql, [id_utente], (err, conteggio) => {
       if (err) {
         console.error("Errore controllo prima ricarica:", err.message);
-        res.status(500).json({ error: "Errore durante il controllo della promozione" });
+        res.status(500).json({
+          error: "Errore durante il controllo della promozione",
+          dettaglio: err.message
+        });
         return;
       }
 
@@ -700,7 +759,10 @@ app.post("/api/portafoglio/ricarica", (req, res) => {
       db.query(creaPortafoglioSql, [id_utente], (err) => {
         if (err) {
           console.error("Errore controllo portafoglio:", err.message);
-          res.status(500).json({ error: "Errore nel controllo del portafoglio" });
+          res.status(500).json({
+            error: "Errore nel controllo del portafoglio",
+            dettaglio: err.message
+          });
           return;
         }
 
@@ -713,7 +775,10 @@ app.post("/api/portafoglio/ricarica", (req, res) => {
         db.query(aggiornaSaldoSql, [totaleAccreditato, id_utente], (err) => {
           if (err) {
             console.error("Errore aggiornamento saldo:", err.message);
-            res.status(500).json({ error: "Errore durante la ricarica" });
+            res.status(500).json({
+              error: "Errore durante la ricarica",
+              dettaglio: err.message
+            });
             return;
           }
 
@@ -737,7 +802,8 @@ app.post("/api/portafoglio/ricarica", (req, res) => {
               if (err) {
                 console.error("Errore registrazione ricarica:", err.message);
                 res.status(500).json({
-                  error: "Saldo aggiornato, ma errore nel salvataggio della ricarica"
+                  error: "Saldo aggiornato, ma errore nel salvataggio della ricarica",
+                  dettaglio: err.message
                 });
                 return;
               }
@@ -752,7 +818,8 @@ app.post("/api/portafoglio/ricarica", (req, res) => {
                 if (err) {
                   console.error("Errore recupero nuovo saldo:", err.message);
                   res.status(500).json({
-                    error: "Ricarica completata, ma errore nel recupero saldo"
+                    error: "Ricarica completata, ma errore nel recupero saldo",
+                    dettaglio: err.message
                   });
                   return;
                 }
@@ -794,7 +861,10 @@ app.get("/api/portafoglio/:id_utente/ricariche", (req, res) => {
   db.query(sql, [idUtente], (err, rows) => {
     if (err) {
       console.error("Errore recupero ricariche:", err.message);
-      res.status(500).json({ error: "Errore nel recupero delle ricariche" });
+      res.status(500).json({
+        error: "Errore nel recupero delle ricariche",
+        dettaglio: err.message
+      });
       return;
     }
 
@@ -822,7 +892,8 @@ app.get("/api/segnalazioni", (req, res) => {
     if (err) {
       console.error("Errore recupero segnalazioni:", err.message);
       res.status(500).json({
-        error: "Errore nel recupero delle segnalazioni"
+        error: "Errore nel recupero delle segnalazioni",
+        dettaglio: err.message
       });
       return;
     }
