@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MoveLanDs - Portfolio</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #111827;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(7, 150, 105, 0.20), transparent 30%),
+        radial-gradient(circle at 85% 15%, rgba(6, 70, 99, 0.18), transparent 28%),
+        radial-gradient(circle at 75% 85%, rgba(7, 150, 105, 0.16), transparent 30%),
+        linear-gradient(135deg, #f4faf7 0%, #eaf7f1 45%, #f8fbff 100%);
+      overflow-x: hidden;
+    }
+
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .navbar {
+      height: 105px;
+      padding: 0 70px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(229, 231, 235, 0.8);
+      box-shadow: 0 8px 24px rgba(17, 45, 35, 0.04);
+      position: relative;
+      z-index: 1000;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      color: #12372a;
+      text-decoration: none;
+    }
+
+    .brand-logo {
+      width: 82px;
+      height: 82px;
+      object-fit: contain;
+      border-radius: 14px;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .brand-title {
+      font-size: 31px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      line-height: 1;
+    }
+
+    .brand-title-blue {
+      color: #064663;
+    }
+
+    .brand-title-green {
+      color: #079669;
+    }
+
+    .brand-subtitle {
+      font-size: 11px;
+      color: #6b7280;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .menu-wrapper {
+      position: relative;
+    }
+
+    .menu-button {
+      width: 54px;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #cfe7dc;
+      background: #ffffff;
+      border-radius: 14px;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(17, 45, 35, 0.06);
+      transition: all 0.2s ease;
+    }
+
+    .menu-button:hover {
+      background: #e7f7ef;
+      border-color: #079669;
+    }
+
+    .menu-icon {
+      width: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .menu-icon span {
+      display: block;
+      height: 3px;
+      width: 100%;
+      border-radius: 999px;
+      background: #079669;
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: 64px;
+      right: 0;
+      width: 245px;
+      background: #ffffff;
+      border: 1px solid #e0ebe6;
+      border-radius: 18px;
+      box-shadow: 0 18px 45px rgba(17, 45, 35, 0.16);
+      padding: 10px;
+      display: none;
+      z-index: 2000;
+    }
+
+    .dropdown-menu.active {
+      display: block;
+    }
+
+    .dropdown-menu a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 15px;
+      border-radius: 13px;
+      color: #12372a;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 800;
+      transition: all 0.2s ease;
+    }
+
+    .dropdown-menu a:hover {
+      background: #e7f7ef;
+      color: #08734f;
+    }
+
+    .dropdown-divider {
+      height: 1px;
+      background: #e5e7eb;
+      margin: 8px 4px;
+    }
+
+    .main {
+      flex: 1;
+      padding: 50px 70px 70px;
+    }
+
+    .hero {
+      max-width: 1100px;
+      margin: 0 auto 24px;
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: 28px;
+      padding: 36px;
+      box-shadow: 0 22px 55px rgba(17, 45, 35, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.75);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 9px 15px;
+      border-radius: 999px;
+      background: #e7f7ef;
+      color: #08734f;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 18px;
+      border: 1px solid rgba(7, 150, 105, 0.12);
+    }
+
+    .hero h1 {
+      margin: 0 0 14px;
+      color: #12372a;
+      font-size: 42px;
+      letter-spacing: -0.8px;
+    }
+
+    .hero h1 span {
+      color: #079669;
+    }
+
+    .hero p {
+      margin: 0;
+      color: #4b5563;
+      font-size: 17px;
+      line-height: 1.6;
+      max-width: 800px;
+    }
+
+    .promo-banner {
+      max-width: 1100px;
+      margin: 0 auto 32px;
+      border-radius: 26px;
+      padding: 26px 30px;
+      background:
+        radial-gradient(circle at 8% 20%, rgba(255,255,255,0.35), transparent 26%),
+        radial-gradient(circle at 90% 15%, rgba(255,255,255,0.24), transparent 28%),
+        linear-gradient(135deg, #064663 0%, #079669 55%, #0bbf7a 100%);
+      color: white;
+      box-shadow: 0 20px 45px rgba(7, 150, 105, 0.24);
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 22px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .promo-banner::after {
+      content: "";
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      right: -55px;
+      bottom: -85px;
+      background: rgba(255,255,255,0.14);
+    }
+
+    .promo-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 38px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .promo-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .promo-kicker {
+      display: inline-block;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .promo-content h2 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      line-height: 1.15;
+      letter-spacing: -0.5px;
+    }
+
+    .promo-content p {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.5;
+      opacity: 0.94;
+      max-width: 670px;
+    }
+
+    .promo-value {
+      position: relative;
+      z-index: 1;
+      min-width: 140px;
+      padding: 18px 20px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.28);
+      text-align: center;
+    }
+
+    .promo-value strong {
+      display: block;
+      font-size: 34px;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .promo-value span {
+      display: block;
+      font-size: 13px;
+      font-weight: 800;
+      opacity: 0.92;
+    }
+
+    .portfolio-grid {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 0.85fr 1.15fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: 28px;
+      padding: 30px;
+      box-shadow: 0 22px 55px rgba(17, 45, 35, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.75);
+    }
+
+    .wallet-card {
+      background:
+        radial-gradient(circle at 15% 15%, rgba(255,255,255,0.35), transparent 30%),
+        linear-gradient(135deg, #064663, #079669);
+      color: white;
+      border: none;
+    }
+
+    .wallet-label {
+      font-size: 15px;
+      opacity: 0.88;
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+
+    .wallet-balance {
+      font-size: 54px;
+      font-weight: 900;
+      letter-spacing: -1.5px;
+      margin-bottom: 20px;
+    }
+
+    .wallet-note {
+      font-size: 14px;
+      line-height: 1.5;
+      opacity: 0.9;
+    }
+
+    .section-title {
+      margin: 0 0 18px;
+      color: #12372a;
+      font-size: 26px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 800;
+      color: #263b35;
+      margin-bottom: 7px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 15px 16px;
+      border-radius: 12px;
+      border: 1px solid #d9dee5;
+      font-size: 15px;
+      outline: none;
+      background: #fbfdfc;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: #079669;
+      box-shadow: 0 0 0 3px rgba(7, 150, 105, 0.12);
+    }
+
+    .main-btn {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 13px;
+      background: #079669;
+      color: white;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+
+    .main-btn:hover {
+      background: #067d58;
+    }
+
+    .main-btn:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+
+    .secondary-note {
+      font-size: 13px;
+      line-height: 1.5;
+      color: #66736f;
+      margin: 12px 0 0;
+    }
+
+    .input-help {
+      font-size: 12px;
+      line-height: 1.4;
+      color: #66736f;
+      margin-top: 6px;
+    }
+
+    .message {
+      display: none;
+      padding: 13px;
+      border-radius: 13px;
+      font-size: 14px;
+      line-height: 1.4;
+      margin-bottom: 18px;
+    }
+
+    .message.success {
+      display: block;
+      background: #e8f8ef;
+      color: #176b46;
+      border: 1px solid #bfe8cf;
+    }
+
+    .message.error {
+      display: block;
+      background: #fff1f1;
+      color: #a12a2a;
+      border: 1px solid #f2c2c2;
+    }
+
+    .list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .list-item {
+      background: #f7fbf9;
+      border: 1px solid #e0ebe6;
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .list-item h3 {
+      margin: 0 0 8px;
+      color: #12372a;
+      font-size: 18px;
+    }
+
+    .list-item p {
+      margin: 4px 0;
+      color: #4b5563;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .empty {
+      padding: 18px;
+      border-radius: 16px;
+      background: #f8fafc;
+      color: #4b5563;
+      border: 1px dashed #cbd5e1;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .two-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .right-column {
+      display: grid;
+      gap: 28px;
+    }
+
+    .payment-source-box {
+      background: #f7fbf9;
+      border: 1px solid #e0ebe6;
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 18px;
+    }
+
+    .payment-source-box h3 {
+      margin: 0 0 8px;
+      color: #12372a;
+      font-size: 17px;
+    }
+
+    .payment-source-box p {
+      margin: 0;
+      color: #4b5563;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 950px) {
+      .portfolio-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .two-columns {
+        grid-template-columns: 1fr;
+      }
+
+      .promo-banner {
+        grid-template-columns: auto 1fr;
+      }
+
+      .promo-value {
+        grid-column: 1 / -1;
+        max-width: 220px;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .navbar {
+        height: auto;
+        min-height: 95px;
+        padding: 18px 25px;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .brand-logo {
+        width: 64px;
+        height: 64px;
+      }
+
+      .brand-title {
+        font-size: 25px;
+      }
+
+      .brand-subtitle {
+        font-size: 9px;
+        letter-spacing: 1px;
+      }
+
+      .menu-wrapper {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }
+
+      .dropdown-menu {
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .main {
+        padding: 35px 22px;
+      }
+
+      .hero h1 {
+        font-size: 32px;
+      }
+
+      .wallet-balance {
+        font-size: 42px;
+      }
+
+      .promo-banner {
+        grid-template-columns: 1fr;
+        padding: 24px;
+      }
+
+      .promo-icon {
+        width: 62px;
+        height: 62px;
+        font-size: 32px;
+      }
+
+      .promo-content h2 {
+        font-size: 24px;
+      }
+
+      .promo-value {
+        width: 100%;
+        max-width: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="page">
+
+    <header class="navbar">
+      <a href="home.html" class="brand">
+        <img src="ProPic.png" alt="Logo MoveLanDs" class="brand-logo">
+
+        <div class="brand-text">
+          <span class="brand-title">
+            <span class="brand-title-blue">Move</span><span class="brand-title-green">LanDs</span>
+          </span>
+          <span class="brand-subtitle">Smart mobility platform</span>
+        </div>
+      </a>
+
+      <div class="menu-wrapper">
+        <button id="menuButton" class="menu-button" type="button" aria-label="Apri menu">
+          <span class="menu-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </button>
+
+        <div id="dropdownMenu" class="dropdown-menu">
+          <a href="account.html">👤 Account</a>
+          <a href="home.html">🗺️ Home</a>
+          <a href="chi-siamo.html">ℹ️ Chi siamo</a>
+          <a href="supporto.html">🛟 Supporto</a>
+          <div class="dropdown-divider"></div>
+          <a href="storico-prenotazioni.html">🧾 Storico prenotazioni</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="main">
+
+      <section class="hero">
+        <span class="badge">Area pagamenti</span>
+
+        <h1>
+          Il tuo <span>portfolio</span>
+        </h1>
+
+        <p>
+          Registra una carta e usa quella carta per ricaricare il saldo interno dell’app.
+          Se non hai una carta registrata, la ricarica viene bloccata.
+        </p>
+      </section>
+
+      <section class="promo-banner">
+        <div class="promo-icon">🎁</div>
+
+        <div class="promo-content">
+          <span class="promo-kicker">Promozione prima ricarica</span>
+
+          <h2>Ricarica almeno 20€ e ricevi 5€ extra</h2>
+
+          <p>
+            Solo per la tua prima ricarica: aggiungi almeno 20€ al portfolio MoveLanDs
+            e ottieni 5€ aggiuntivi da usare per i tuoi prossimi spostamenti.
+          </p>
+        </div>
+
+        <div class="promo-value">
+          <strong>+5€</strong>
+          <span>bonus ricarica</span>
+        </div>
+      </section>
+
+      <section class="portfolio-grid">
+
+        <div class="left-column">
+          <div class="card wallet-card">
+            <div class="wallet-label">Saldo disponibile</div>
+            <div class="wallet-balance" id="saldoPortafoglio">€0.00</div>
+            <div class="wallet-note">
+              Questo saldo rappresenta il credito interno dell’applicazione.
+            </div>
+          </div>
+
+          <br>
+
+          <div class="card">
+            <h2 class="section-title">Ricarica saldo</h2>
+
+            <div id="ricaricaMessage" class="message"></div>
+
+            <div class="payment-source-box">
+              <h3>Fonte pagamento</h3>
+              <p>La ricarica può essere effettuata solo usando una carta già registrata nel tuo account.</p>
+            </div>
+
+            <form id="ricaricaForm">
+              <div class="form-group">
+                <label for="cartaRicarica">Carta da usare</label>
+                <select id="cartaRicarica">
+                  <option value="">Caricamento carte...</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="importoRicarica">Importo da ricaricare</label>
+                <select id="importoRicarica">
+                  <option value="">Seleziona importo</option>
+                  <option value="5">€5,00</option>
+                  <option value="10">€10,00</option>
+                  <option value="20">€20,00</option>
+                  <option value="50">€50,00</option>
+                </select>
+              </div>
+
+              <button id="ricaricaBtn" class="main-btn" type="submit">Ricarica portfolio</button>
+            </form>
+
+            <p class="secondary-note">
+              Se non hai carte registrate, prima aggiungi una carta nella sezione “Aggiungi carta”.
+            </p>
+          </div>
+        </div>
+
+        <div class="right-column">
+
+          <div class="card">
+            <h2 class="section-title">Aggiungi carta</h2>
+
+            <div id="cartaMessage" class="message"></div>
+
+            <form id="cartaForm">
+              <div class="form-group">
+                <label for="intestatarioCarta">Intestatario</label>
+                <input id="intestatarioCarta" type="text" placeholder="Mario Rossi">
+              </div>
+
+              <div class="form-group">
+                <label for="numeroCarta">Numero carta</label>
+                <input
+                  id="numeroCarta"
+                  type="text"
+                  placeholder="123456789012"
+                  maxlength="12"
+                  inputmode="numeric"
+                  autocomplete="off"
+                >
+                <div class="input-help">
+                  Inserisci solo numeri. Il numero non può superare 12 cifre.
+                </div>
+              </div>
+
+              <div class="two-columns">
+                <div class="form-group">
+                  <label for="circuitoCarta">Circuito</label>
+                  <select id="circuitoCarta">
+                    <option value="">Seleziona circuito</option>
+                    <option value="Visa">Visa</option>
+                    <option value="Mastercard">Mastercard</option>
+                    <option value="American Express">American Express</option>
+                    <option value="Altro">Altro</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="scadenzaCarta">Scadenza</label>
+                  <input
+                    id="scadenzaCarta"
+                    type="text"
+                    placeholder="MM/AAAA"
+                    maxlength="7"
+                    inputmode="numeric"
+                    autocomplete="off"
+                  >
+                  <div class="input-help">
+                    Inserisci mese e anno. Lo slash viene aggiunto automaticamente.
+                  </div>
+                </div>
+              </div>
+
+              <button class="main-btn" type="submit">Salva carta</button>
+            </form>
+
+            <p class="secondary-note">
+              Questa demo non salva il numero completo della carta, ma solo le ultime quattro cifre.
+            </p>
+          </div>
+
+          <div class="card">
+            <h2 class="section-title">Carte registrate</h2>
+            <div id="listaCarte" class="list">
+              <div class="empty">Caricamento carte...</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="section-title">Storico ricariche</h2>
+            <div id="listaRicariche" class="list">
+              <div class="empty">Caricamento ricariche...</div>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <script>
+    let utenteCorrente = null;
+    let ID_UTENTE_CORRENTE = null;
+    let carteUtente = [];
+
+    function controllaLogin() {
+      const utenteSalvato = localStorage.getItem("movelands_utente");
+
+      if (!utenteSalvato) {
+        alert("Devi effettuare il login per accedere al portfolio.");
+        window.location.href = "index.html";
+        return false;
+      }
+
+      try {
+        utenteCorrente = JSON.parse(utenteSalvato);
+      } catch (error) {
+        localStorage.removeItem("movelands_utente");
+        localStorage.removeItem("movelands_id_utente");
+        localStorage.removeItem("movelands_ruolo");
+
+        alert("Sessione non valida. Effettua nuovamente il login.");
+        window.location.href = "index.html";
+        return false;
+      }
+
+      if (!utenteCorrente || !utenteCorrente.id_utente) {
+        alert("Sessione non valida. Effettua nuovamente il login.");
+        window.location.href = "index.html";
+        return false;
+      }
+
+      ID_UTENTE_CORRENTE = utenteCorrente.id_utente;
+      return true;
+    }
+
+    function mostraMessaggio(elementId, testo, tipo) {
+      const element = document.getElementById(elementId);
+      element.textContent = testo;
+      element.className = "message " + tipo;
+    }
+
+    function pulisciMessaggio(elementId) {
+      const element = document.getElementById(elementId);
+      element.textContent = "";
+      element.className = "message";
+    }
+
+    function formatoEuro(valore) {
+      return "€" + Number(valore).toFixed(2);
+    }
+
+    function pulisciSoloNumeri(valore) {
+      return valore.replace(/\D/g, "");
+    }
+
+    function formattaScadenzaCarta(valore) {
+      const soloNumeri = pulisciSoloNumeri(valore).slice(0, 6);
+
+      if (soloNumeri.length <= 2) {
+        return soloNumeri;
+      }
+
+      return soloNumeri.slice(0, 2) + "/" + soloNumeri.slice(2);
+    }
+
+    function scadenzaValida(scadenza) {
+      if (!/^\d{2}\/\d{4}$/.test(scadenza)) {
+        return false;
+      }
+
+      const mese = Number(scadenza.slice(0, 2));
+      const anno = Number(scadenza.slice(3, 7));
+
+      if (mese < 1 || mese > 12) {
+        return false;
+      }
+
+      if (anno < 2024 || anno > 2100) {
+        return false;
+      }
+
+      return true;
+    }
+
+    async function caricaSaldo() {
+      try {
+        const response = await fetch("/api/portafoglio/" + ID_UTENTE_CORRENTE);
+
+        if (!response.ok) {
+          throw new Error("Errore nel recupero saldo");
+        }
+
+        const portafoglio = await response.json();
+
+        document.getElementById("saldoPortafoglio").textContent = formatoEuro(portafoglio.saldo);
+
+      } catch (error) {
+        console.error("Errore saldo:", error);
+        document.getElementById("saldoPortafoglio").textContent = "Errore";
+      }
+    }
+
+    function aggiornaSelectCarte() {
+      const cartaRicarica = document.getElementById("cartaRicarica");
+      const ricaricaBtn = document.getElementById("ricaricaBtn");
+
+      cartaRicarica.innerHTML = "";
+
+      if (carteUtente.length === 0) {
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = "Nessuna carta registrata";
+        cartaRicarica.appendChild(option);
+
+        cartaRicarica.disabled = true;
+        ricaricaBtn.disabled = true;
+
+        mostraMessaggio(
+          "ricaricaMessage",
+          "Non puoi ricaricare il portfolio perché non hai nessuna carta registrata.",
+          "error"
+        );
+
+        return;
+      }
+
+      cartaRicarica.disabled = false;
+      ricaricaBtn.disabled = false;
+      pulisciMessaggio("ricaricaMessage");
+
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = "Seleziona carta";
+      cartaRicarica.appendChild(placeholder);
+
+      carteUtente.forEach((carta) => {
+        const option = document.createElement("option");
+        option.value = carta.id_carta;
+        option.textContent = `${carta.circuito} •••• ${carta.ultime_quattro} - ${carta.intestatario}`;
+        cartaRicarica.appendChild(option);
+      });
+    }
+
+    async function caricaCarte() {
+      const listaCarte = document.getElementById("listaCarte");
+
+      try {
+        const response = await fetch("/api/carte/" + ID_UTENTE_CORRENTE);
+
+        if (!response.ok) {
+          throw new Error("Errore nel recupero carte");
+        }
+
+        carteUtente = await response.json();
+
+        aggiornaSelectCarte();
+
+        if (carteUtente.length === 0) {
+          listaCarte.innerHTML = `
+            <div class="empty">
+              Non hai ancora carte registrate.
+            </div>
+          `;
+          return;
+        }
+
+        listaCarte.innerHTML = "";
+
+        carteUtente.forEach((carta) => {
+          const item = document.createElement("div");
+          item.className = "list-item";
+
+          item.innerHTML = `
+            <h3>${carta.circuito} •••• ${carta.ultime_quattro}</h3>
+            <p>Intestatario: ${carta.intestatario}</p>
+            <p>Scadenza: ${carta.scadenza}</p>
+          `;
+
+          listaCarte.appendChild(item);
+        });
+
+      } catch (error) {
+        console.error("Errore carte:", error);
+        listaCarte.innerHTML = `
+          <div class="empty">
+            Errore nel caricamento delle carte.
+          </div>
+        `;
+      }
+    }
+
+    async function caricaRicariche() {
+      const listaRicariche = document.getElementById("listaRicariche");
+
+      try {
+        const response = await fetch("/api/portafoglio/" + ID_UTENTE_CORRENTE + "/ricariche");
+
+        if (!response.ok) {
+          throw new Error("Errore nel recupero ricariche");
+        }
+
+        const ricariche = await response.json();
+
+        if (ricariche.length === 0) {
+          listaRicariche.innerHTML = `
+            <div class="empty">
+              Non hai ancora effettuato ricariche.
+            </div>
+          `;
+          return;
+        }
+
+        listaRicariche.innerHTML = "";
+
+        ricariche.forEach((ricarica) => {
+          const bonus = Number(ricarica.bonus_applicato || 0);
+          const totale = Number(ricarica.totale_accreditato || ricarica.importo);
+
+          const item = document.createElement("div");
+          item.className = "list-item";
+
+          item.innerHTML = `
+            <h3>Ricarica ${formatoEuro(ricarica.importo)}</h3>
+            <p>Metodo: ${ricarica.metodo}</p>
+            <p>Bonus applicato: ${formatoEuro(bonus)}</p>
+            <p>Totale accreditato: ${formatoEuro(totale)}</p>
+            <p>Data: ${ricarica.data_ricarica}</p>
+          `;
+
+          listaRicariche.appendChild(item);
+        });
+
+      } catch (error) {
+        console.error("Errore ricariche:", error);
+        listaRicariche.innerHTML = `
+          <div class="empty">
+            Errore nel caricamento delle ricariche.
+          </div>
+        `;
+      }
+    }
+
+    document.getElementById("numeroCarta").addEventListener("input", function(event) {
+      event.target.value = pulisciSoloNumeri(event.target.value).slice(0, 12);
+    });
+
+    document.getElementById("scadenzaCarta").addEventListener("input", function(event) {
+      event.target.value = formattaScadenzaCarta(event.target.value);
+    });
+
+    document.getElementById("cartaForm").addEventListener("submit", async function(event) {
+      event.preventDefault();
+
+      const intestatario = document.getElementById("intestatarioCarta").value.trim();
+      const numeroCarta = document.getElementById("numeroCarta").value.trim();
+      const circuito = document.getElementById("circuitoCarta").value;
+      const scadenza = document.getElementById("scadenzaCarta").value.trim();
+
+      if (!intestatario || !numeroCarta || !circuito || !scadenza) {
+        mostraMessaggio("cartaMessage", "Compila tutti i campi della carta.", "error");
+        return;
+      }
+
+      if (!/^\d{12}$/.test(numeroCarta)) {
+        mostraMessaggio("cartaMessage", "Il numero carta deve contenere esattamente 12 cifre numeriche.", "error");
+        return;
+      }
+
+      if (!scadenzaValida(scadenza)) {
+        mostraMessaggio("cartaMessage", "La scadenza deve essere nel formato MM/AAAA con mese valido, per esempio 05/2028.", "error");
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/carte", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            id_utente: ID_UTENTE_CORRENTE,
+            intestatario: intestatario,
+            numero_carta: numeroCarta,
+            circuito: circuito,
+            scadenza: scadenza
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          mostraMessaggio("cartaMessage", result.error || "Errore nel salvataggio della carta.", "error");
+          return;
+        }
+
+        mostraMessaggio("cartaMessage", "Carta aggiunta correttamente. Ora puoi usarla per ricaricare.", "success");
+
+        document.getElementById("cartaForm").reset();
+
+        await caricaCarte();
+
+      } catch (error) {
+        console.error("Errore aggiunta carta:", error);
+        mostraMessaggio("cartaMessage", "Errore di connessione con il server.", "error");
+      }
+    });
+
+    document.getElementById("ricaricaForm").addEventListener("submit", async function(event) {
+      event.preventDefault();
+
+      const idCarta = document.getElementById("cartaRicarica").value;
+      const importo = document.getElementById("importoRicarica").value;
+
+      if (carteUtente.length === 0) {
+        mostraMessaggio(
+          "ricaricaMessage",
+          "Ricarica bloccata: devi prima registrare almeno una carta.",
+          "error"
+        );
+        return;
+      }
+
+      if (!idCarta) {
+        mostraMessaggio("ricaricaMessage", "Seleziona la carta da cui vuoi ricaricare.", "error");
+        return;
+      }
+
+      if (!importo) {
+        mostraMessaggio("ricaricaMessage", "Seleziona un importo da ricaricare.", "error");
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/portafoglio/ricarica", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            id_utente: ID_UTENTE_CORRENTE,
+            id_carta: idCarta,
+            importo: importo
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          mostraMessaggio("ricaricaMessage", result.error || "Errore durante la ricarica.", "error");
+          return;
+        }
+
+        let messaggio = "Ricarica effettuata correttamente usando " + result.carta_usata + ".";
+
+        if (Number(result.bonus_applicato || 0) > 0) {
+          messaggio += " Bonus prima ricarica applicato: +" + formatoEuro(result.bonus_applicato) + ".";
+        }
+
+        mostraMessaggio("ricaricaMessage", messaggio, "success");
+
+        document.getElementById("ricaricaForm").reset();
+
+        await caricaSaldo();
+        await caricaRicariche();
+        await caricaCarte();
+
+      } catch (error) {
+        console.error("Errore ricarica:", error);
+        mostraMessaggio("ricaricaMessage", "Errore di connessione con il server.", "error");
+      }
+    });
+
+    document.getElementById("menuButton").addEventListener("click", function(event) {
+      event.stopPropagation();
+      document.getElementById("dropdownMenu").classList.toggle("active");
+    });
+
+    document.addEventListener("click", function(event) {
+      const menuWrapper = document.querySelector(".menu-wrapper");
+      const dropdownMenu = document.getElementById("dropdownMenu");
+
+      if (!menuWrapper.contains(event.target)) {
+        dropdownMenu.classList.remove("active");
+      }
+    });
+
+    if (controllaLogin()) {
+      caricaSaldo();
+      caricaCarte();
+      caricaRicariche();
+    }
+  </script>
+
+</body>
+</html>

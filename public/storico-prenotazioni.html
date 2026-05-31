@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MoveLanDs - Storico prenotazioni</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #111827;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(7, 150, 105, 0.20), transparent 30%),
+        radial-gradient(circle at 85% 15%, rgba(6, 70, 99, 0.18), transparent 28%),
+        radial-gradient(circle at 75% 85%, rgba(7, 150, 105, 0.16), transparent 30%),
+        linear-gradient(135deg, #f4faf7 0%, #eaf7f1 45%, #f8fbff 100%);
+      overflow-x: hidden;
+    }
+
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .navbar {
+      height: 105px;
+      padding: 0 70px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(229, 231, 235, 0.8);
+      box-shadow: 0 8px 24px rgba(17, 45, 35, 0.04);
+      position: relative;
+      z-index: 1000;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      color: #12372a;
+      text-decoration: none;
+    }
+
+    .brand-logo {
+      width: 82px;
+      height: 82px;
+      object-fit: contain;
+      border-radius: 14px;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .brand-title {
+      font-size: 31px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      line-height: 1;
+    }
+
+    .brand-title-blue {
+      color: #064663;
+    }
+
+    .brand-title-green {
+      color: #079669;
+    }
+
+    .brand-subtitle {
+      font-size: 11px;
+      color: #6b7280;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .menu-wrapper {
+      position: relative;
+    }
+
+    .menu-button {
+      width: 54px;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #cfe7dc;
+      background: #ffffff;
+      color: #12372a;
+      border-radius: 14px;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(17, 45, 35, 0.06);
+      transition: all 0.2s ease;
+    }
+
+    .menu-button:hover {
+      background: #e7f7ef;
+      color: #08734f;
+      border-color: #079669;
+    }
+
+    .menu-icon {
+      width: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .menu-icon span {
+      display: block;
+      height: 3px;
+      width: 100%;
+      border-radius: 999px;
+      background: #079669;
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: 64px;
+      right: 0;
+      width: 245px;
+      background: #ffffff;
+      border: 1px solid #e0ebe6;
+      border-radius: 18px;
+      box-shadow: 0 18px 45px rgba(17, 45, 35, 0.16);
+      padding: 10px;
+      display: none;
+      z-index: 2000;
+    }
+
+    .dropdown-menu.active {
+      display: block;
+    }
+
+    .dropdown-menu a,
+    .dropdown-menu button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 15px;
+      border-radius: 13px;
+      color: #12372a;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 800;
+      transition: all 0.2s ease;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      text-align: left;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .dropdown-menu a:hover,
+    .dropdown-menu button:hover {
+      background: #e7f7ef;
+      color: #08734f;
+    }
+
+    .dropdown-divider {
+      height: 1px;
+      background: #e5e7eb;
+      margin: 8px 4px;
+    }
+
+    .main {
+      flex: 1;
+      padding: 50px 70px 70px;
+    }
+
+    .hero {
+      max-width: 1100px;
+      margin: 0 auto 32px;
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: 28px;
+      padding: 36px;
+      box-shadow: 0 22px 55px rgba(17, 45, 35, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.75);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 9px 15px;
+      border-radius: 999px;
+      background: #e7f7ef;
+      color: #08734f;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 18px;
+      border: 1px solid rgba(7, 150, 105, 0.12);
+    }
+
+    .hero h1 {
+      margin: 0 0 14px;
+      color: #12372a;
+      font-size: 42px;
+      letter-spacing: -0.8px;
+    }
+
+    .hero h1 span {
+      color: #079669;
+    }
+
+    .hero p {
+      margin: 0;
+      color: #4b5563;
+      font-size: 17px;
+      line-height: 1.6;
+      max-width: 760px;
+    }
+
+    .user-box {
+      max-width: 1100px;
+      margin: 0 auto 24px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid #e0ebe6;
+      border-radius: 20px;
+      padding: 20px 24px;
+      box-shadow: 0 12px 28px rgba(17, 45, 35, 0.08);
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: center;
+      color: #4b5563;
+      font-size: 15px;
+    }
+
+    .user-box strong {
+      color: #12372a;
+    }
+
+    .history-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: 0 22px 55px rgba(17, 45, 35, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.75);
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .history-header h2 {
+      margin: 0;
+      color: #12372a;
+      font-size: 28px;
+    }
+
+    .back-btn {
+      padding: 12px 16px;
+      border-radius: 13px;
+      background: #079669;
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .back-btn:hover {
+      background: #067d58;
+    }
+
+    .history-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 18px;
+    }
+
+    .history-card {
+      border: 1px solid #e0ebe6;
+      background: #f8fafc;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 8px 20px rgba(17, 45, 35, 0.06);
+    }
+
+    .history-card h3 {
+      margin: 0 0 14px;
+      color: #12372a;
+      font-size: 20px;
+    }
+
+    .history-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 10px 0;
+      font-size: 14px;
+      color: #4b5563;
+    }
+
+    .history-row strong {
+      color: #12372a;
+      text-align: right;
+    }
+
+    .history-status {
+      display: inline-block;
+      margin-top: 14px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      color: #374151;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .empty-history {
+      padding: 22px;
+      border-radius: 18px;
+      background: #f8fafc;
+      color: #4b5563;
+      border: 1px dashed #cbd5e1;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .loading {
+      padding: 22px;
+      border-radius: 18px;
+      background: #eef6ff;
+      color: #23527c;
+      border: 1px solid #c7def5;
+      font-size: 15px;
+    }
+
+    @media (max-width: 800px) {
+      .navbar {
+        height: auto;
+        min-height: 95px;
+        padding: 18px 25px;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .brand-logo {
+        width: 64px;
+        height: 64px;
+      }
+
+      .brand-title {
+        font-size: 25px;
+      }
+
+      .brand-subtitle {
+        font-size: 9px;
+        letter-spacing: 1px;
+      }
+
+      .menu-wrapper {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }
+
+      .dropdown-menu {
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .main {
+        padding: 35px 22px;
+      }
+
+      .hero h1 {
+        font-size: 32px;
+      }
+
+      .history-header,
+      .user-box {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="page">
+
+    <header class="navbar">
+      <a href="home.html" class="brand">
+        <img src="ProPic.png" alt="Logo MoveLanDs" class="brand-logo">
+
+        <div class="brand-text">
+          <span class="brand-title">
+            <span class="brand-title-blue">Move</span><span class="brand-title-green">LanDs</span>
+          </span>
+          <span class="brand-subtitle">Smart mobility platform</span>
+        </div>
+      </a>
+
+      <div class="menu-wrapper">
+        <button id="menuButton" class="menu-button" type="button" aria-label="Apri menu">
+          <span class="menu-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </button>
+
+        <div id="dropdownMenu" class="dropdown-menu">
+          <a href="account.html">👤 Account</a>
+          <a href="home.html">🗺️ Home</a>
+          <a href="chi-siamo.html">ℹ️ Chi siamo</a>
+          <a href="supporto.html">🛟 Supporto</a>
+          <div class="dropdown-divider"></div>
+          <button id="logoutBtn" type="button">🚪 Esci</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="main">
+
+      <section class="hero">
+        <span class="badge">Archivio personale</span>
+
+        <h1>
+          Storico <span>prenotazioni</span>
+        </h1>
+
+        <p>
+          In questa pagina puoi visualizzare solo le prenotazioni completate associate
+          all’account con cui hai effettuato il login.
+        </p>
+      </section>
+
+      <section class="user-box">
+        <div>
+          Account attivo:
+          <strong id="loggedUserName">Caricamento...</strong>
+        </div>
+
+        <div>
+          Email:
+          <strong id="loggedUserEmail">Caricamento...</strong>
+        </div>
+      </section>
+
+      <section class="history-container">
+        <div class="history-header">
+          <h2>Mezzi già utilizzati</h2>
+          <a href="home.html" class="back-btn">Torna alla home</a>
+        </div>
+
+        <div id="historyList" class="history-grid">
+          <div class="loading">Caricamento storico prenotazioni in corso...</div>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <script>
+    let utenteCorrente = null;
+    let ID_UTENTE_CORRENTE = null;
+
+    function controllaLogin() {
+      const utenteSalvato = localStorage.getItem("movelands_utente");
+
+      if (!utenteSalvato) {
+        alert("Devi effettuare il login per vedere lo storico prenotazioni.");
+        window.location.href = "index.html";
+        return false;
+      }
+
+      try {
+        utenteCorrente = JSON.parse(utenteSalvato);
+      } catch (error) {
+        localStorage.removeItem("movelands_utente");
+        localStorage.removeItem("movelands_id_utente");
+        localStorage.removeItem("movelands_ruolo");
+
+        alert("Sessione non valida. Effettua nuovamente il login.");
+        window.location.href = "index.html";
+        return false;
+      }
+
+      if (!utenteCorrente || !utenteCorrente.id_utente) {
+        alert("Sessione non valida. Effettua nuovamente il login.");
+        window.location.href = "index.html";
+        return false;
+      }
+
+      ID_UTENTE_CORRENTE = utenteCorrente.id_utente;
+
+      document.getElementById("loggedUserName").textContent =
+        (utenteCorrente.nome || "") + " " + (utenteCorrente.cognome || "");
+
+      document.getElementById("loggedUserEmail").textContent =
+        utenteCorrente.email || "Email non disponibile";
+
+      return true;
+    }
+
+    function formatTipo(tipo) {
+      if (tipo === "bicicletta") return "Bicicletta";
+      if (tipo === "auto") return "Auto";
+      if (tipo === "scooter") return "Scooter";
+      if (tipo === "monopattino") return "Monopattino";
+      return tipo;
+    }
+
+    function getIconaPrenotazione(tipo) {
+      if (tipo === "bicicletta") return "🚲";
+      if (tipo === "auto") return "🚗";
+      if (tipo === "scooter") return "🏍️";
+      if (tipo === "monopattino") return "🛴";
+      return "🚘";
+    }
+
+    async function caricaStoricoPrenotazioni() {
+      const historyList = document.getElementById("historyList");
+
+      historyList.className = "";
+      historyList.innerHTML = `
+        <div class="loading">
+          Caricamento storico prenotazioni in corso...
+        </div>
+      `;
+
+      try {
+        const response = await fetch("/api/prenotazioni/utente/" + ID_UTENTE_CORRENTE + "/storico");
+
+        if (!response.ok) {
+          throw new Error("Errore nel recupero dello storico prenotazioni");
+        }
+
+        const storico = await response.json();
+
+        if (storico.length === 0) {
+          historyList.className = "";
+          historyList.innerHTML = `
+            <div class="empty-history">
+              Non hai ancora prenotazioni completate con questo account.
+              Dopo aver terminato una prenotazione, questa comparirà automaticamente qui.
+            </div>
+          `;
+          return;
+        }
+
+        historyList.className = "history-grid";
+        historyList.innerHTML = "";
+
+        storico.forEach((prenotazione) => {
+          const card = document.createElement("div");
+          card.className = "history-card";
+
+          card.innerHTML = `
+            <h3>
+              ${getIconaPrenotazione(prenotazione.tipo)}
+              ${formatTipo(prenotazione.tipo)} ${prenotazione.id_mezzo}
+            </h3>
+
+            <div class="history-row">
+              <span>ID prenotazione</span>
+              <strong>${prenotazione.id_prenotazione}</strong>
+            </div>
+
+            <div class="history-row">
+              <span>Modello</span>
+              <strong>${prenotazione.modello || "Non specificato"}</strong>
+            </div>
+
+            <div class="history-row">
+              <span>Area</span>
+              <strong>${prenotazione.area || "Non specificata"}</strong>
+            </div>
+
+            <div class="history-row">
+              <span>Tariffa</span>
+              <strong>€${prenotazione.tariffa_minuto}/min</strong>
+            </div>
+
+            <div class="history-row">
+              <span>Data prenotazione</span>
+              <strong>${prenotazione.data_ora_prenotazione}</strong>
+            </div>
+
+            <div class="history-row">
+              <span>Scadenza</span>
+              <strong>${prenotazione.data_ora_scadenza}</strong>
+            </div>
+
+            <span class="history-status">
+              ${prenotazione.stato_prenotazione}
+            </span>
+          `;
+
+          historyList.appendChild(card);
+        });
+
+      } catch (error) {
+        console.error("Errore caricamento storico prenotazioni:", error);
+
+        historyList.className = "";
+        historyList.innerHTML = `
+          <div class="empty-history">
+            Errore nel caricamento dello storico prenotazioni.
+            Controlla che il server sia acceso e che il database sia collegato.
+          </div>
+        `;
+      }
+    }
+
+    document.getElementById("menuButton").addEventListener("click", function(event) {
+      event.stopPropagation();
+      document.getElementById("dropdownMenu").classList.toggle("active");
+    });
+
+    document.addEventListener("click", function(event) {
+      const menuWrapper = document.querySelector(".menu-wrapper");
+      const dropdownMenu = document.getElementById("dropdownMenu");
+
+      if (!menuWrapper.contains(event.target)) {
+        dropdownMenu.classList.remove("active");
+      }
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", function() {
+      localStorage.removeItem("movelands_utente");
+      localStorage.removeItem("movelands_id_utente");
+      localStorage.removeItem("movelands_ruolo");
+
+      window.location.href = "index.html";
+    });
+
+    if (controllaLogin()) {
+      caricaStoricoPrenotazioni();
+    }
+  </script>
+
+</body>
+</html>
