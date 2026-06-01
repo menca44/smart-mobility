@@ -653,13 +653,14 @@
 
     .bookings-panel {
       display: none;
-      background: #ffffff;
-      border-radius: 24px;
-      padding: 24px;
-      box-shadow: 0 14px 34px rgba(17, 45, 35, 0.10);
-      border: 1px solid #e0ebe6;
-      margin-top: 24px;
-      flex-shrink: 0;
+      grid-column: 1 / -1;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(14px);
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: 0 22px 55px rgba(17, 45, 35, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.75);
+      margin-top: 0;
     }
 
     .bookings-panel.active {
@@ -1313,7 +1314,8 @@
       }
 
       .side-panel,
-      .map-panel {
+      .map-panel,
+      .bookings-panel {
         max-width: 900px;
         width: 100%;
         margin: 0 auto;
@@ -1623,12 +1625,13 @@
           <div id="tarantoMap"></div>
         </div>
 
-        <div id="bookingsPanel" class="bookings-panel">
-          <h2>Le tue prenotazioni</h2>
-          <p>Qui puoi visualizzare solo le prenotazioni attive.</p>
+      </section>
 
-          <div id="bookingsList"></div>
-        </div>
+      <section id="bookingsPanel" class="bookings-panel">
+        <h2>Le tue prenotazioni</h2>
+        <p>Qui puoi visualizzare solo le prenotazioni attive. Questo riquadro è separato dalla mappa.</p>
+
+        <div id="bookingsList"></div>
       </section>
 
     </main>
@@ -2602,6 +2605,13 @@
 
       if (bookingsPanel.classList.contains("active")) {
         caricaPrenotazioniUtente();
+
+        setTimeout(function() {
+          bookingsPanel.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          });
+        }, 100);
       }
 
       setTimeout(function() {
