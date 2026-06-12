@@ -14,7 +14,6 @@
       --blu: #1d4ed8;
       --rosso: #dc2626;
       --arancio: #f97316;
-      --giallo: #facc15;
       --sfondo: #f4f7fb;
       --testo: #172033;
       --grigio: #6b7280;
@@ -40,7 +39,7 @@
     .navbar {
       width: 100%;
       padding: 16px 24px;
-      background: rgba(255, 255, 255, 0.92);
+      background: rgba(255, 255, 255, 0.94);
       backdrop-filter: blur(14px);
       border-bottom: 1px solid rgba(221, 229, 239, 0.9);
       display: flex;
@@ -329,11 +328,6 @@
     .btn-secondary {
       background: #eef6ff;
       color: var(--blu);
-    }
-
-    .btn-danger {
-      background: #fee2e2;
-      color: var(--rosso);
     }
 
     .chat-box {
@@ -874,8 +868,6 @@
 
     let idConversazioneUtente = localStorage.getItem("movelands_supporto_conversazione");
     let idConversazioneAdminSelezionata = null;
-    let timerChatUtente = null;
-    let timerChatAdmin = null;
 
     const problemiPerCategoria = {
       mezzo: [
@@ -1349,7 +1341,7 @@
         await caricaMessaggiUtente();
       }
 
-      timerChatUtente = setInterval(caricaMessaggiUtente, 2000);
+      setInterval(caricaMessaggiUtente, 2000);
 
       if (isAdmin) {
         document.getElementById("areaAdmin").style.display = "block";
@@ -1357,7 +1349,7 @@
         await caricaSegnalazioniAdmin();
         await caricaConversazioniAdmin();
 
-        timerChatAdmin = setInterval(() => {
+        setInterval(() => {
           caricaConversazioniAdmin();
 
           if (idConversazioneAdminSelezionata) {
