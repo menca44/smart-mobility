@@ -1,11 +1,28 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MoveLanDs - Supporto</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Supporto - MoveLanDs</title>
 
   <style>
+    :root {
+      --verde: #0f8f5f;
+      --verde-scuro: #075f40;
+      --verde-chiaro: #e9fff5;
+      --blu: #1d4ed8;
+      --rosso: #dc2626;
+      --arancio: #f97316;
+      --giallo: #facc15;
+      --sfondo: #f4f7fb;
+      --testo: #172033;
+      --grigio: #6b7280;
+      --bianco: #ffffff;
+      --bordo: #dde5ef;
+      --ombra: 0 18px 45px rgba(15, 23, 42, 0.12);
+    }
+
     * {
       box-sizing: border-box;
     }
@@ -13,193 +30,1342 @@
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
-      background: #f4faf7;
-      color: #111827;
+      background:
+        radial-gradient(circle at top left, rgba(15, 143, 95, 0.18), transparent 32%),
+        radial-gradient(circle at top right, rgba(29, 78, 216, 0.12), transparent 28%),
+        var(--sfondo);
+      color: var(--testo);
     }
 
     .navbar {
-      height: 105px;
-      padding: 0 70px;
+      width: 100%;
+      padding: 16px 24px;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(221, 229, 239, 0.9);
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      background: #ffffff;
-      border-bottom: 1px solid #e5e7eb;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 16px;
-      color: #12372a;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--testo);
     }
 
-    .brand-logo {
-      width: 82px;
-      height: 82px;
+    .brand img {
+      width: 46px;
+      height: 46px;
       object-fit: contain;
-      border-radius: 14px;
+      border-radius: 12px;
     }
 
     .brand-text {
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      line-height: 1.1;
     }
 
-    .brand-title {
-      font-size: 31px;
+    .brand-text span:first-child {
+      font-size: 20px;
       font-weight: 800;
-      letter-spacing: -0.8px;
-      line-height: 1;
     }
 
-    .brand-title-blue {
-      color: #064663;
+    .brand-text span:last-child {
+      font-size: 12px;
+      color: var(--grigio);
     }
 
-    .brand-title-green {
-      color: #079669;
-    }
-
-    .brand-subtitle {
-      font-size: 11px;
-      color: #6b7280;
-      letter-spacing: 1.4px;
-      text-transform: uppercase;
-      font-weight: 700;
-    }
-
-    .back-link {
-      color: #079669;
-      font-weight: 700;
-      text-decoration: none;
-      font-size: 15px;
-    }
-
-    .page-content {
-      min-height: calc(100vh - 105px);
+    .nav-links {
       display: flex;
-      justify-content: center;
+      gap: 12px;
       align-items: center;
-      padding: 70px 30px;
     }
 
-    .support-card {
-      max-width: 850px;
-      width: 100%;
-      background: #ffffff;
-      border-radius: 28px;
-      padding: 55px;
-      text-align: center;
-      box-shadow: 0 18px 45px rgba(17, 45, 35, 0.12);
-      border: 1px solid #e5eee9;
+    .nav-links a {
+      color: var(--testo);
+      text-decoration: none;
+      font-size: 14px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      transition: 0.2s;
     }
 
-    .support-logo {
-      width: 120px;
-      height: auto;
-      object-fit: contain;
-      border-radius: 18px;
-      margin-bottom: 24px;
+    .nav-links a:hover {
+      background: var(--verde-chiaro);
+      color: var(--verde-scuro);
     }
 
-    .support-card h1 {
-      font-size: 44px;
-      color: #12372a;
-      margin: 0 0 20px;
+    .hero {
+      max-width: 1200px;
+      margin: 34px auto 22px;
+      padding: 0 22px;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 24px;
+      align-items: stretch;
     }
 
-    .support-card p {
-      font-size: 18px;
-      line-height: 1.7;
-      color: #4b5563;
-      margin: 0 auto 30px;
-      max-width: 650px;
+    .hero-card {
+      background: linear-gradient(135deg, #0f8f5f, #075f40);
+      color: white;
+      border-radius: 30px;
+      padding: 34px;
+      box-shadow: var(--ombra);
+      position: relative;
+      overflow: hidden;
+      min-height: 280px;
     }
 
-    .draft-note {
-      background: #f4faf7;
-      border: 1px solid #e0ebe6;
-      border-radius: 18px;
-      padding: 22px;
-      color: #566761;
-      font-size: 15px;
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.14);
+      right: -70px;
+      top: -70px;
+    }
+
+    .hero-card h1 {
+      margin: 0;
+      font-size: 42px;
+      line-height: 1.05;
+      max-width: 640px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-card p {
+      max-width: 620px;
+      font-size: 16px;
       line-height: 1.6;
+      opacity: 0.94;
+      position: relative;
+      z-index: 1;
     }
 
-    @media (max-width: 700px) {
-      .navbar {
-        height: auto;
-        min-height: 95px;
-        padding: 18px 25px;
-        flex-direction: column;
-        gap: 16px;
+    .hero-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .badge {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      font-size: 13px;
+    }
+
+    .status-card {
+      background: var(--bianco);
+      border-radius: 30px;
+      padding: 28px;
+      box-shadow: var(--ombra);
+      border: 1px solid var(--bordo);
+    }
+
+    .status-card h2 {
+      margin: 0 0 18px;
+      font-size: 24px;
+    }
+
+    .status-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .status-item {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      padding: 14px;
+      border-radius: 18px;
+      background: #f8fafc;
+      border: 1px solid #edf2f7;
+    }
+
+    .status-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: var(--verde-chiaro);
+      font-size: 20px;
+    }
+
+    .status-item h3 {
+      margin: 0 0 4px;
+      font-size: 15px;
+    }
+
+    .status-item p {
+      margin: 0;
+      color: var(--grigio);
+      font-size: 13px;
+    }
+
+    .main {
+      max-width: 1200px;
+      margin: 0 auto 50px;
+      padding: 0 22px;
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 24px;
+    }
+
+    .panel {
+      background: var(--bianco);
+      border-radius: 28px;
+      padding: 24px;
+      box-shadow: var(--ombra);
+      border: 1px solid var(--bordo);
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .panel h2 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .panel-description {
+      margin: 8px 0 0;
+      color: var(--grigio);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 7px;
+      color: #374151;
+    }
+
+    select,
+    input,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--bordo);
+      border-radius: 16px;
+      padding: 13px 14px;
+      font-size: 14px;
+      outline: none;
+      background: #ffffff;
+      color: var(--testo);
+      transition: 0.2s;
+      font-family: inherit;
+    }
+
+    select:focus,
+    input:focus,
+    textarea:focus {
+      border-color: var(--verde);
+      box-shadow: 0 0 0 4px rgba(15, 143, 95, 0.12);
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .two-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 16px;
+      padding: 13px 18px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--verde);
+      color: white;
+      width: 100%;
+      box-shadow: 0 12px 24px rgba(15, 143, 95, 0.24);
+    }
+
+    .btn-primary:hover {
+      background: var(--verde-scuro);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: #eef6ff;
+      color: var(--blu);
+    }
+
+    .btn-danger {
+      background: #fee2e2;
+      color: var(--rosso);
+    }
+
+    .chat-box {
+      height: 440px;
+      border: 1px solid var(--bordo);
+      background: #f8fafc;
+      border-radius: 22px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chat-top {
+      padding: 16px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--bordo);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .chat-top-title {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-top-title span:first-child {
+      font-weight: 800;
+      font-size: 15px;
+    }
+
+    .chat-top-title span:last-child {
+      color: var(--grigio);
+      font-size: 12px;
+      margin-top: 3px;
+    }
+
+    .live-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--verde);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .live-dot::before {
+      content: "";
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--verde);
+      box-shadow: 0 0 0 6px rgba(15, 143, 95, 0.14);
+    }
+
+    .messages {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .message {
+      max-width: 78%;
+      padding: 12px 14px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.4;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+      word-wrap: break-word;
+    }
+
+    .message.utente {
+      align-self: flex-end;
+      background: var(--verde);
+      color: white;
+      border-bottom-right-radius: 6px;
+    }
+
+    .message.operatore {
+      align-self: flex-start;
+      background: white;
+      color: var(--testo);
+      border: 1px solid var(--bordo);
+      border-bottom-left-radius: 6px;
+    }
+
+    .message-time {
+      display: block;
+      font-size: 10px;
+      opacity: 0.7;
+      margin-top: 5px;
+    }
+
+    .chat-input {
+      padding: 14px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      background: #ffffff;
+      border-top: 1px solid var(--bordo);
+    }
+
+    .chat-input input {
+      border-radius: 999px;
+    }
+
+    .chat-input button {
+      border-radius: 999px;
+      padding: 0 18px;
+      background: var(--verde);
+      color: white;
+      border: 0;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .admin-area {
+      display: none;
+      max-width: 1200px;
+      margin: 0 auto 60px;
+      padding: 0 22px;
+    }
+
+    .admin-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .admin-list {
+      display: grid;
+      gap: 12px;
+      max-height: 520px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .admin-card {
+      padding: 16px;
+      border: 1px solid var(--bordo);
+      border-radius: 18px;
+      background: #f8fafc;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .admin-card:hover {
+      transform: translateY(-1px);
+      background: #ffffff;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    }
+
+    .admin-card h3 {
+      margin: 0 0 8px;
+      font-size: 15px;
+    }
+
+    .admin-card p {
+      margin: 0 0 8px;
+      color: var(--grigio);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 10px;
+    }
+
+    .tag {
+      border-radius: 999px;
+      padding: 6px 9px;
+      font-size: 11px;
+      font-weight: 800;
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    .tag.nuova {
+      background: #fee2e2;
+      color: var(--rosso);
+    }
+
+    .tag.in_lavorazione {
+      background: #ffedd5;
+      color: var(--arancio);
+    }
+
+    .tag.risolta {
+      background: #dcfce7;
+      color: var(--verde-scuro);
+    }
+
+    .admin-chat-layout {
+      display: grid;
+      grid-template-columns: 0.85fr 1.15fr;
+      gap: 14px;
+    }
+
+    .conversation-list {
+      border: 1px solid var(--bordo);
+      border-radius: 18px;
+      overflow: hidden;
+      max-height: 440px;
+      overflow-y: auto;
+      background: #f8fafc;
+    }
+
+    .conversation-item {
+      padding: 13px;
+      border-bottom: 1px solid var(--bordo);
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .conversation-item:hover,
+    .conversation-item.active {
+      background: var(--verde-chiaro);
+    }
+
+    .conversation-item h4 {
+      margin: 0 0 4px;
+      font-size: 14px;
+    }
+
+    .conversation-item p {
+      margin: 0;
+      font-size: 12px;
+      color: var(--grigio);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .empty-state {
+      color: var(--grigio);
+      text-align: center;
+      padding: 26px 12px;
+      font-size: 14px;
+    }
+
+    .toast {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      background: #111827;
+      color: white;
+      padding: 14px 18px;
+      border-radius: 16px;
+      box-shadow: var(--ombra);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(12px);
+      transition: 0.25s;
+      z-index: 100;
+      max-width: 320px;
+      font-size: 14px;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 900px) {
+      .hero,
+      .main,
+      .admin-grid,
+      .admin-chat-layout {
+        grid-template-columns: 1fr;
       }
 
-      .brand-logo {
-        width: 64px;
-        height: 64px;
+      .hero-card h1 {
+        font-size: 32px;
       }
 
-      .brand-title {
-        font-size: 25px;
+      .nav-links {
+        display: none;
       }
 
-      .brand-subtitle {
-        font-size: 9px;
-        letter-spacing: 1px;
+      .two-cols {
+        grid-template-columns: 1fr;
       }
 
-      .support-card {
-        padding: 35px 25px;
-      }
-
-      .support-card h1 {
-        font-size: 34px;
-      }
-
-      .support-logo {
-        width: 95px;
+      .chat-box {
+        height: 500px;
       }
     }
   </style>
 </head>
 
 <body>
-
-  <header class="navbar">
-    <div class="brand">
-      <img src="ProPic.png" alt="Logo MoveLanDs" class="brand-logo">
-
+  <nav class="navbar">
+    <a href="home.html" class="brand">
+      <img src="ProPic.png" alt="Logo MoveLanDs" />
       <div class="brand-text">
-        <span class="brand-title">
-          <span class="brand-title-blue">Move</span><span class="brand-title-green">LanDs</span>
-        </span>
-        <span class="brand-subtitle">Smart mobility platform</span>
+        <span>MoveLanDs</span>
+        <span>Supporto e sicurezza urbana</span>
+      </div>
+    </a>
+
+    <div class="nav-links">
+      <a href="home.html">Home</a>
+      <a href="portfolio.html">Portfolio</a>
+      <a href="storico-prenotazioni.html">Storico</a>
+      <a href="account.html">Account</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-card">
+      <h1>Assistenza rapida, segnalazioni chiare, città più sicura.</h1>
+      <p>
+        Da questa pagina puoi parlare con un operatore, segnalare problemi sui mezzi
+        e comunicare criticità stradali come lavori in corso, incidenti o manifestazioni.
+      </p>
+
+      <div class="hero-badges">
+        <span class="badge">Chat live</span>
+        <span class="badge">Segnalazioni mezzi</span>
+        <span class="badge">Problemi stradali</span>
+        <span class="badge">Dashboard amministratore</span>
       </div>
     </div>
 
-    <a href="index.html" class="back-link">Torna alla Home</a>
-  </header>
+    <aside class="status-card">
+      <h2>Come funziona</h2>
 
-  <main class="page-content">
-    <section class="support-card">
-      <img src="ProPic.png" alt="Logo MoveLanDs" class="support-logo">
+      <div class="status-list">
+        <div class="status-item">
+          <div class="status-icon">💬</div>
+          <div>
+            <h3>Chat con operatore</h3>
+            <p>Scrivi un messaggio e attendi una risposta dal pannello amministratore.</p>
+          </div>
+        </div>
 
-      <h1>Supporto</h1>
+        <div class="status-item">
+          <div class="status-icon">🛴</div>
+          <div>
+            <h3>Problemi con i mezzi</h3>
+            <p>Segnala guasti, batteria scarica, freni, ruote o mezzo danneggiato.</p>
+          </div>
+        </div>
 
-      <p>
-        Questa sezione sarà dedicata all’assistenza per gli utenti di MoveLanDs.
-        Qui potranno essere inserite informazioni utili, domande frequenti,
-        contatti, segnalazioni di problemi e richieste di supporto.
-      </p>
+        <div class="status-item">
+          <div class="status-icon">🚧</div>
+          <div>
+            <h3>Problemi stradali</h3>
+            <p>Comunica lavori, incidenti, manifestazioni o ostacoli alla circolazione.</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </section>
 
-      <div class="draft-note">
-        Pagina in costruzione: il contenuto definitivo verrà aggiunto successivamente.
+  <main class="main" id="areaUtente">
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>Invia una segnalazione</h2>
+          <p class="panel-description">
+            Compila il modulo. Gli amministratori potranno visualizzare la segnalazione
+            e aggiornarne lo stato.
+          </p>
+        </div>
+      </div>
+
+      <form id="formSegnalazione">
+        <div class="two-cols">
+          <div class="field">
+            <label for="categoria">Categoria</label>
+            <select id="categoria" required>
+              <option value="">Seleziona categoria</option>
+              <option value="mezzo">Problema con un mezzo</option>
+              <option value="strada">Problema stradale</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="tipoProblema">Tipo di problema</label>
+            <select id="tipoProblema" required>
+              <option value="">Seleziona prima una categoria</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="posizione">Posizione o riferimento</label>
+          <input
+            type="text"
+            id="posizione"
+            placeholder="Esempio: Via Di Palma, Taranto oppure vicino Piazza Ebalia"
+          />
+        </div>
+
+        <div class="field">
+          <label for="descrizione">Descrizione</label>
+          <textarea
+            id="descrizione"
+            placeholder="Descrivi il problema in modo chiaro..."
+            required
+          ></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+          Invia segnalazione
+        </button>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>Chat con operatore</h2>
+          <p class="panel-description">
+            La conversazione viene aggiornata automaticamente ogni pochi secondi.
+          </p>
+        </div>
+      </div>
+
+      <div class="chat-box">
+        <div class="chat-top">
+          <div class="chat-top-title">
+            <span>Centro assistenza MoveLanDs</span>
+            <span id="chatSubtitle">Apri una conversazione per iniziare</span>
+          </div>
+          <span class="live-dot">live</span>
+        </div>
+
+        <div class="messages" id="messagesUtente">
+          <div class="message operatore">
+            Ciao, sono un operatore MoveLanDs. Scrivici il problema e ti risponderemo appena possibile.
+          </div>
+        </div>
+
+        <div class="chat-input">
+          <input
+            id="inputMessaggioUtente"
+            type="text"
+            placeholder="Scrivi un messaggio..."
+          />
+          <button id="btnInviaMessaggioUtente">Invia</button>
+        </div>
       </div>
     </section>
   </main>
 
+  <section class="admin-area" id="areaAdmin">
+    <div class="admin-grid">
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Segnalazioni ricevute</h2>
+            <p class="panel-description">
+              Qui l'amministratore vede problemi sui mezzi e criticità stradali.
+            </p>
+          </div>
+          <button class="btn btn-secondary" onclick="caricaSegnalazioniAdmin()">Aggiorna</button>
+        </div>
+
+        <div class="admin-list" id="listaSegnalazioni">
+          <div class="empty-state">Caricamento segnalazioni...</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Chat operatori</h2>
+            <p class="panel-description">
+              Seleziona una conversazione e rispondi come operatore.
+            </p>
+          </div>
+          <button class="btn btn-secondary" onclick="caricaConversazioniAdmin()">Aggiorna</button>
+        </div>
+
+        <div class="admin-chat-layout">
+          <div class="conversation-list" id="listaConversazioni">
+            <div class="empty-state">Nessuna conversazione caricata.</div>
+          </div>
+
+          <div class="chat-box">
+            <div class="chat-top">
+              <div class="chat-top-title">
+                <span id="titoloChatAdmin">Nessuna chat selezionata</span>
+                <span id="sottotitoloChatAdmin">Scegli una conversazione dalla lista</span>
+              </div>
+              <span class="live-dot">live</span>
+            </div>
+
+            <div class="messages" id="messagesAdmin">
+              <div class="empty-state">Seleziona una chat per leggere i messaggi.</div>
+            </div>
+
+            <div class="chat-input">
+              <input
+                id="inputMessaggioAdmin"
+                type="text"
+                placeholder="Rispondi come operatore..."
+              />
+              <button id="btnInviaMessaggioAdmin">Invia</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // Recupero l'utente salvato dal login.
+    // Se non esiste, uso dati generici per permettere comunque la prova della pagina.
+    const utenteSalvato = localStorage.getItem("movelands_utente");
+    const utenteCorrente = utenteSalvato ? JSON.parse(utenteSalvato) : null;
+
+    const idUtenteCorrente = utenteCorrente && utenteCorrente.id_utente
+      ? utenteCorrente.id_utente
+      : null;
+
+    const nomeUtenteCorrente = utenteCorrente
+      ? `${utenteCorrente.nome || ""} ${utenteCorrente.cognome || ""}`.trim() || utenteCorrente.email || "Utente"
+      : "Utente non registrato";
+
+    const ruoloUtenteCorrente = utenteCorrente && utenteCorrente.ruolo
+      ? String(utenteCorrente.ruolo).toLowerCase()
+      : "utente";
+
+    const isAdmin = ruoloUtenteCorrente === "admin" || ruoloUtenteCorrente === "amministratore";
+
+    let idConversazioneUtente = localStorage.getItem("movelands_supporto_conversazione");
+    let idConversazioneAdminSelezionata = null;
+    let timerChatUtente = null;
+    let timerChatAdmin = null;
+
+    const problemiPerCategoria = {
+      mezzo: [
+        "Mezzo danneggiato",
+        "Batteria scarica",
+        "Freni non funzionanti",
+        "Ruota o pneumatico danneggiato",
+        "Mezzo non si sblocca",
+        "Mezzo parcheggiato male",
+        "Altro problema con il mezzo"
+      ],
+      strada: [
+        "Lavori in corso",
+        "Incidente",
+        "Manifestazione",
+        "Strada bloccata",
+        "Ostacolo sulla carreggiata",
+        "Zona pericolosa",
+        "Altro problema stradale"
+      ]
+    };
+
+    const categoriaSelect = document.getElementById("categoria");
+    const tipoProblemaSelect = document.getElementById("tipoProblema");
+
+    categoriaSelect.addEventListener("change", () => {
+      const categoria = categoriaSelect.value;
+      const problemi = problemiPerCategoria[categoria] || [];
+
+      tipoProblemaSelect.innerHTML = "";
+
+      if (problemi.length === 0) {
+        tipoProblemaSelect.innerHTML = `<option value="">Seleziona prima una categoria</option>`;
+        return;
+      }
+
+      tipoProblemaSelect.innerHTML = `<option value="">Seleziona problema</option>`;
+
+      problemi.forEach((problema) => {
+        const option = document.createElement("option");
+        option.value = problema;
+        option.textContent = problema;
+        tipoProblemaSelect.appendChild(option);
+      });
+    });
+
+    function mostraToast(messaggio) {
+      const toast = document.getElementById("toast");
+      toast.textContent = messaggio;
+      toast.classList.add("show");
+
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, 3200);
+    }
+
+    function formattaData(data) {
+      if (!data) return "";
+
+      const d = new Date(data);
+
+      if (Number.isNaN(d.getTime())) {
+        return "";
+      }
+
+      return d.toLocaleString("it-IT", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    // =====================================================
+    // SEGNALAZIONI UTENTE
+    // =====================================================
+
+    document.getElementById("formSegnalazione").addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const categoria = document.getElementById("categoria").value;
+      const tipoProblema = document.getElementById("tipoProblema").value;
+      const posizione = document.getElementById("posizione").value.trim();
+      const descrizione = document.getElementById("descrizione").value.trim();
+
+      if (!categoria || !tipoProblema || !descrizione) {
+        mostraToast("Compila categoria, tipo di problema e descrizione.");
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/supporto/segnalazioni", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            id_utente: idUtenteCorrente,
+            nome_utente: nomeUtenteCorrente,
+            categoria,
+            tipo_problema: tipoProblema,
+            posizione,
+            descrizione
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || "Errore durante l'invio della segnalazione");
+        }
+
+        document.getElementById("formSegnalazione").reset();
+        tipoProblemaSelect.innerHTML = `<option value="">Seleziona prima una categoria</option>`;
+
+        mostraToast("Segnalazione inviata correttamente.");
+
+        if (isAdmin) {
+          caricaSegnalazioniAdmin();
+        }
+      } catch (error) {
+        console.error(error);
+        mostraToast(error.message);
+      }
+    });
+
+    // =====================================================
+    // CHAT UTENTE
+    // =====================================================
+
+    async function creaConversazioneUtenteSeNecessario() {
+      if (idConversazioneUtente) {
+        return idConversazioneUtente;
+      }
+
+      const response = await fetch("/api/supporto/chat/conversazioni", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          id_utente: idUtenteCorrente,
+          nome_utente: nomeUtenteCorrente
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Errore durante l'apertura della chat");
+      }
+
+      idConversazioneUtente = result.id_conversazione;
+      localStorage.setItem("movelands_supporto_conversazione", idConversazioneUtente);
+
+      document.getElementById("chatSubtitle").textContent =
+        `Conversazione #${idConversazioneUtente}`;
+
+      return idConversazioneUtente;
+    }
+
+    async function inviaMessaggioUtente() {
+      const input = document.getElementById("inputMessaggioUtente");
+      const testo = input.value.trim();
+
+      if (!testo) return;
+
+      try {
+        const idConversazione = await creaConversazioneUtenteSeNecessario();
+
+        const response = await fetch(`/api/supporto/chat/${idConversazione}/messaggi`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            mittente: "utente",
+            testo
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || "Errore durante l'invio del messaggio");
+        }
+
+        input.value = "";
+        await caricaMessaggiUtente();
+      } catch (error) {
+        console.error(error);
+        mostraToast(error.message);
+      }
+    }
+
+    async function caricaMessaggiUtente() {
+      if (!idConversazioneUtente) return;
+
+      try {
+        const response = await fetch(`/api/supporto/chat/${idConversazioneUtente}/messaggi`);
+        const messaggi = await response.json();
+
+        if (!response.ok) {
+          throw new Error(messaggi.error || "Errore durante il caricamento dei messaggi");
+        }
+
+        const container = document.getElementById("messagesUtente");
+        container.innerHTML = "";
+
+        if (messaggi.length === 0) {
+          container.innerHTML = `
+            <div class="message operatore">
+              Ciao, sono un operatore MoveLanDs. Scrivici il problema e ti risponderemo appena possibile.
+            </div>
+          `;
+          return;
+        }
+
+        messaggi.forEach((messaggio) => {
+          const div = document.createElement("div");
+          div.className = `message ${messaggio.mittente}`;
+          div.innerHTML = `
+            ${messaggio.testo}
+            <span class="message-time">${formattaData(messaggio.data_invio)}</span>
+          `;
+          container.appendChild(div);
+        });
+
+        container.scrollTop = container.scrollHeight;
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    document.getElementById("btnInviaMessaggioUtente").addEventListener("click", inviaMessaggioUtente);
+
+    document.getElementById("inputMessaggioUtente").addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        inviaMessaggioUtente();
+      }
+    });
+
+    // =====================================================
+    // AREA AMMINISTRATORE
+    // =====================================================
+
+    async function caricaSegnalazioniAdmin() {
+      if (!isAdmin) return;
+
+      const container = document.getElementById("listaSegnalazioni");
+      container.innerHTML = `<div class="empty-state">Caricamento segnalazioni...</div>`;
+
+      try {
+        const response = await fetch("/api/supporto/segnalazioni");
+        const segnalazioni = await response.json();
+
+        if (!response.ok) {
+          throw new Error(segnalazioni.error || "Errore durante il caricamento delle segnalazioni");
+        }
+
+        container.innerHTML = "";
+
+        if (segnalazioni.length === 0) {
+          container.innerHTML = `<div class="empty-state">Nessuna segnalazione presente.</div>`;
+          return;
+        }
+
+        segnalazioni.forEach((s) => {
+          const card = document.createElement("div");
+          card.className = "admin-card";
+
+          card.innerHTML = `
+            <h3>${s.tipo_problema}</h3>
+            <p>${s.descrizione}</p>
+            <p>Utente: ${s.nome_utente || "Non indicato"}</p>
+            <p>Posizione: ${s.posizione || "Non indicata"}</p>
+            <div class="tag-row">
+              <span class="tag">${s.categoria}</span>
+              <span class="tag ${s.stato}">${s.stato}</span>
+              <span class="tag">${formattaData(s.data_creazione)}</span>
+            </div>
+
+            <div style="margin-top: 12px;">
+              <select onchange="aggiornaStatoSegnalazione(${s.id_segnalazione}, this.value)">
+                <option value="nuova" ${s.stato === "nuova" ? "selected" : ""}>Nuova</option>
+                <option value="in_lavorazione" ${s.stato === "in_lavorazione" ? "selected" : ""}>In lavorazione</option>
+                <option value="risolta" ${s.stato === "risolta" ? "selected" : ""}>Risolta</option>
+              </select>
+            </div>
+          `;
+
+          container.appendChild(card);
+        });
+      } catch (error) {
+        console.error(error);
+        container.innerHTML = `<div class="empty-state">${error.message}</div>`;
+      }
+    }
+
+    async function aggiornaStatoSegnalazione(idSegnalazione, stato) {
+      try {
+        const response = await fetch(`/api/supporto/segnalazioni/${idSegnalazione}/stato`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ stato })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || "Errore durante l'aggiornamento dello stato");
+        }
+
+        mostraToast("Stato aggiornato.");
+        caricaSegnalazioniAdmin();
+      } catch (error) {
+        console.error(error);
+        mostraToast(error.message);
+      }
+    }
+
+    async function caricaConversazioniAdmin() {
+      if (!isAdmin) return;
+
+      const container = document.getElementById("listaConversazioni");
+      container.innerHTML = `<div class="empty-state">Caricamento conversazioni...</div>`;
+
+      try {
+        const response = await fetch("/api/supporto/chat/conversazioni");
+        const conversazioni = await response.json();
+
+        if (!response.ok) {
+          throw new Error(conversazioni.error || "Errore durante il caricamento delle conversazioni");
+        }
+
+        container.innerHTML = "";
+
+        if (conversazioni.length === 0) {
+          container.innerHTML = `<div class="empty-state">Nessuna conversazione aperta.</div>`;
+          return;
+        }
+
+        conversazioni.forEach((conversazione) => {
+          const item = document.createElement("div");
+          item.className = "conversation-item";
+          item.dataset.id = conversazione.id_conversazione;
+
+          if (Number(idConversazioneAdminSelezionata) === Number(conversazione.id_conversazione)) {
+            item.classList.add("active");
+          }
+
+          item.innerHTML = `
+            <h4>${conversazione.nome_utente || "Utente"}</h4>
+            <p>${conversazione.ultimo_messaggio || "Nessun messaggio"}</p>
+          `;
+
+          item.addEventListener("click", () => {
+            idConversazioneAdminSelezionata = conversazione.id_conversazione;
+
+            document.getElementById("titoloChatAdmin").textContent =
+              conversazione.nome_utente || "Utente";
+
+            document.getElementById("sottotitoloChatAdmin").textContent =
+              `Conversazione #${conversazione.id_conversazione}`;
+
+            caricaConversazioniAdmin();
+            caricaMessaggiAdmin();
+          });
+
+          container.appendChild(item);
+        });
+      } catch (error) {
+        console.error(error);
+        container.innerHTML = `<div class="empty-state">${error.message}</div>`;
+      }
+    }
+
+    async function caricaMessaggiAdmin() {
+      if (!idConversazioneAdminSelezionata) return;
+
+      try {
+        const response = await fetch(`/api/supporto/chat/${idConversazioneAdminSelezionata}/messaggi`);
+        const messaggi = await response.json();
+
+        if (!response.ok) {
+          throw new Error(messaggi.error || "Errore durante il caricamento dei messaggi");
+        }
+
+        const container = document.getElementById("messagesAdmin");
+        container.innerHTML = "";
+
+        if (messaggi.length === 0) {
+          container.innerHTML = `<div class="empty-state">Nessun messaggio in questa chat.</div>`;
+          return;
+        }
+
+        messaggi.forEach((messaggio) => {
+          const div = document.createElement("div");
+          div.className = `message ${messaggio.mittente}`;
+          div.innerHTML = `
+            ${messaggio.testo}
+            <span class="message-time">${formattaData(messaggio.data_invio)}</span>
+          `;
+          container.appendChild(div);
+        });
+
+        container.scrollTop = container.scrollHeight;
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    async function inviaMessaggioAdmin() {
+      const input = document.getElementById("inputMessaggioAdmin");
+      const testo = input.value.trim();
+
+      if (!idConversazioneAdminSelezionata) {
+        mostraToast("Seleziona prima una conversazione.");
+        return;
+      }
+
+      if (!testo) return;
+
+      try {
+        const response = await fetch(`/api/supporto/chat/${idConversazioneAdminSelezionata}/messaggi`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            mittente: "operatore",
+            testo
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || "Errore durante l'invio del messaggio");
+        }
+
+        input.value = "";
+        await caricaMessaggiAdmin();
+        await caricaConversazioniAdmin();
+      } catch (error) {
+        console.error(error);
+        mostraToast(error.message);
+      }
+    }
+
+    document.getElementById("btnInviaMessaggioAdmin").addEventListener("click", inviaMessaggioAdmin);
+
+    document.getElementById("inputMessaggioAdmin").addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        inviaMessaggioAdmin();
+      }
+    });
+
+    // =====================================================
+    // AVVIO PAGINA
+    // =====================================================
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      if (idConversazioneUtente) {
+        document.getElementById("chatSubtitle").textContent =
+          `Conversazione #${idConversazioneUtente}`;
+
+        await caricaMessaggiUtente();
+      }
+
+      timerChatUtente = setInterval(caricaMessaggiUtente, 2000);
+
+      if (isAdmin) {
+        document.getElementById("areaAdmin").style.display = "block";
+
+        await caricaSegnalazioniAdmin();
+        await caricaConversazioniAdmin();
+
+        timerChatAdmin = setInterval(() => {
+          caricaConversazioniAdmin();
+
+          if (idConversazioneAdminSelezionata) {
+            caricaMessaggiAdmin();
+          }
+        }, 2500);
+      }
+    });
+  </script>
 </body>
 </html>

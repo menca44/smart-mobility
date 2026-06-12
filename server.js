@@ -948,7 +948,236 @@ app.get("/api/segnalazioni", (req, res) => {
     res.json(rows);
   });
 });
+// =====================================================
+// ROTTE SUPPORTO: SEGNALAZIONI E CHAT
+// =====================================================
 
+// Crea una nuova segnalazione inviata da un utente.
+app.post("/api/supporto/segnalazioni", (req, res) => {
+  const {
+    id_utente,
+    nome_utente,
+    categoria,
+    tipo_problema,
+    descrizione,
+    posizione
+  } = req.body;
+
+  if (!categoria || !tipo_problema || !descrizione) {
+    return res.status(400).json({
+      error: "Categoria, tipo di problema e descrizione sono obbligatori"
+    });
+  }
+
+  const sql = `
+    INSERT INTO supporto_segnalazioni
+    (id_utente, nome_utente, categoria, tipo_problema, descrizione, posizione)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+
+  db.query(
+    sql,
+    [
+      id_utente || null,
+      nome_utente || "Utente",
+      categoria,
+      tipo_problema,
+      descrizione,
+      posizione || null
+    ],
+    (err, result) => {
+      if (err) {
+        console.error("Errore creazione segnalazione:", err.message);
+        return res.status(500).json({
+          error: "Errore durante l'invio della segnalazione",
+          dettaglio: err.message
+        });
+      }
+
+      res.json({
+        message: "Segnalazione inviata correttamente",
+        id_segnalazione: result.insertId
+      });
+    }
+  );
+});
+
+// Restituisce tutte le segnalazioni per la dashboard amministratore.
+app.get("/api/supporto/segnalazioni", (req, res) => {
+  const sql = `
+    SELECT *
+    FROM supporto_segnalazioni
+    ORDER BY data_creazione DESC
+  `;
+
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error("Errore lettura segnalazioni:", err.message);
+      return res.status(500).json({
+        error: "Errore durante il recupero delle segnalazioni",
+        dettaglio: err.message
+      });
+    }
+
+    res.json(results);
+  });
+});
+
+// Aggiorna lo stato di una segnalazione.
+app.put("/api/supporto/segnalazioni/:id_segnalazione/stato", (req, res) => {
+  const idSegnalazione = req.params.id_segnalazione;
+  const { stato } = req.body;
+
+  const statiConsentiti = ["nuova", "in_lavorazione", "risolta"];
+
+  if (!statiConsentiti.includes(stato)) {
+    return res.status(400).json({
+      error: "Stato non valido"
+    });
+  }
+
+  const sql = `
+    UPDATE supporto_segnalazioni
+    SET stato = ?
+    WHERE id_segnalazione = ?
+  `;
+
+  db.query(sql, [stato, idSegnalazione], (err) => {
+    if (err) {
+      console.error("Errore aggiornamento stato segnalazione:", err.message);
+      return res.status(500).json({
+        error: "Errore durante l'aggiornamento della segnalazione",
+        dettaglio: err.message
+      });
+    }
+
+    res.json({
+      message: "Stato segnalazione aggiornato correttamente"
+    });
+  });
+});
+
+// Crea una conversazione chat per l'utente.
+app.post("/api/supporto/chat/conversazioni", (req, res) => {
+  const { id_utente, nome_utente } = req.body;
+
+  const sql = `
+    INSERT INTO supporto_chat_conversazioni
+    (id_utente, nome_utente)
+    VALUES (?, ?)
+  `;
+
+  db.query(sql, [id_utente || null, nome_utente || "Utente"], (err, result) => {
+    if (err) {
+      console.error("Errore creazione conversazione:", err.message);
+      return res.status(500).json({
+        error: "Errore durante l'apertura della chat",
+        dettaglio: err.message
+      });
+    }
+
+    res.json({
+      message: "Conversazione aperta correttamente",
+      id_conversazione: result.insertId
+    });
+  });
+});
+
+// Restituisce tutte le conversazioni per l'amministratore.
+app.get("/api/supporto/chat/conversazioni", (req, res) => {
+  const sql = `
+    SELECT 
+      c.id_conversazione,
+      c.id_utente,
+      c.nome_utente,
+      c.stato,
+      c.data_creazione,
+      (
+        SELECT testo
+        FROM supporto_chat_messaggi m
+        WHERE m.id_conversazione = c.id_conversazione
+        ORDER BY m.data_invio DESC
+        LIMIT 1
+      ) AS ultimo_messaggio
+    FROM supporto_chat_conversazioni c
+    ORDER BY c.data_creazione DESC
+  `;
+
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error("Errore lettura conversazioni:", err.message);
+      return res.status(500).json({
+        error: "Errore durante il recupero delle conversazioni",
+        dettaglio: err.message
+      });
+    }
+
+    res.json(results);
+  });
+});
+
+// Restituisce i messaggi di una conversazione.
+app.get("/api/supporto/chat/:id_conversazione/messaggi", (req, res) => {
+  const idConversazione = req.params.id_conversazione;
+
+  const sql = `
+    SELECT *
+    FROM supporto_chat_messaggi
+    WHERE id_conversazione = ?
+    ORDER BY data_invio ASC
+  `;
+
+  db.query(sql, [idConversazione], (err, results) => {
+    if (err) {
+      console.error("Errore lettura messaggi:", err.message);
+      return res.status(500).json({
+        error: "Errore durante il recupero dei messaggi",
+        dettaglio: err.message
+      });
+    }
+
+    res.json(results);
+  });
+});
+
+// Invia un messaggio in una conversazione.
+app.post("/api/supporto/chat/:id_conversazione/messaggi", (req, res) => {
+  const idConversazione = req.params.id_conversazione;
+  const { mittente, testo } = req.body;
+
+  if (!mittente || !testo) {
+    return res.status(400).json({
+      error: "Mittente e testo sono obbligatori"
+    });
+  }
+
+  if (!["utente", "operatore"].includes(mittente)) {
+    return res.status(400).json({
+      error: "Mittente non valido"
+    });
+  }
+
+  const sql = `
+    INSERT INTO supporto_chat_messaggi
+    (id_conversazione, mittente, testo)
+    VALUES (?, ?, ?)
+  `;
+
+  db.query(sql, [idConversazione, mittente, testo], (err, result) => {
+    if (err) {
+      console.error("Errore invio messaggio:", err.message);
+      return res.status(500).json({
+        error: "Errore durante l'invio del messaggio",
+        dettaglio: err.message
+      });
+    }
+
+    res.json({
+      message: "Messaggio inviato correttamente",
+      id_messaggio: result.insertId
+    });
+  });
+});
 app.listen(PORT, () => {
   console.log(`Server avviato sulla porta ${PORT}`);
 });
