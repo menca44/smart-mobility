@@ -452,13 +452,17 @@ app.get("/api/prenotazioni/utente/:id_utente/storico", (req, res) => {
 app.put("/api/prenotazioni/:id_prenotazione/termina", (req, res) => {
   const idPrenotazione = req.params.id_prenotazione;
 
+  // Recupero la prenotazione insieme al mezzo, perché mi serve anche la tariffa al minuto.
   const cercaPrenotazioneSql = `
     SELECT 
-      id_prenotazione,
-      id_mezzo,
-      stato_prenotazione
+      prenotazioni.id_prenotazione,
+      prenotazioni.id_mezzo,
+      prenotazioni.stato_prenotazione,
+      prenotazioni.data_ora_prenotazione,
+      mezzi.tariffa_minuto
     FROM prenotazioni
-    WHERE id_prenotazione = ?
+    JOIN mezzi ON prenotazioni.id_mezzo = mezzi.id_mezzo
+    WHERE prenotazioni.id_prenotazione = ?
   `;
 
   db.query(cercaPrenotazioneSql, [idPrenotazione], (err, rows) => {
@@ -487,48 +491,85 @@ app.put("/api/prenotazioni/:id_prenotazione/termina", (req, res) => {
       return;
     }
 
-    const terminaPrenotazioneSql = `
-      UPDATE prenotazioni
-      SET stato_prenotazione = 'completata'
-      WHERE id_prenotazione = ?
+    // Calcolo la durata reale della corsa in minuti.
+    // Uso almeno 1 minuto, così una corsa terminata subito non costa 0.
+    const calcoloCostoSql = `
+      SELECT 
+        GREATEST(TIMESTAMPDIFF(MINUTE, ?, NOW()), 1) AS durata_minuti
     `;
 
-    db.query(terminaPrenotazioneSql, [idPrenotazione], (err) => {
+    db.query(calcoloCostoSql, [prenotazione.data_ora_prenotazione], (err, durataRows) => {
       if (err) {
-        console.error("Errore aggiornamento prenotazione:", err.message);
+        console.error("Errore calcolo durata:", err.message);
         res.status(500).json({
-          error: "Errore durante la terminazione della prenotazione",
+          error: "Errore durante il calcolo della durata",
           dettaglio: err.message
         });
         return;
       }
 
-      const aggiornaMezzoSql = `
-        UPDATE mezzi
-        SET stato = 'disponibile'
-        WHERE id_mezzo = ?
+      const durataMinuti = Number(durataRows[0].durata_minuti);
+      const tariffaMinuto = Number(prenotazione.tariffa_minuto);
+      const costoTotale = Number((durataMinuti * tariffaMinuto).toFixed(2));
+
+      // Aggiorno la prenotazione salvando fine corsa, durata e costo.
+      const terminaPrenotazioneSql = `
+        UPDATE prenotazioni
+        SET 
+          stato_prenotazione = 'completata',
+          data_ora_fine = NOW(),
+          durata_minuti = ?,
+          costo_totale = ?
+        WHERE id_prenotazione = ?
       `;
 
-      db.query(aggiornaMezzoSql, [prenotazione.id_mezzo], (err, updateResult) => {
-        if (err) {
-          console.error("Errore aggiornamento mezzo:", err.message);
-          res.status(500).json({
-            error: "Prenotazione terminata, ma errore nel rendere disponibile il mezzo",
-            dettaglio: err.message
+      db.query(
+        terminaPrenotazioneSql,
+        [durataMinuti, costoTotale, idPrenotazione],
+        (err) => {
+          if (err) {
+            console.error("Errore aggiornamento prenotazione:", err.message);
+            res.status(500).json({
+              error: "Errore durante la terminazione della prenotazione",
+              dettaglio: err.message
+            });
+            return;
+          }
+
+          // Quando la corsa termina, il mezzo torna disponibile.
+          const aggiornaMezzoSql = `
+            UPDATE mezzi
+            SET stato = 'disponibile'
+            WHERE id_mezzo = ?
+          `;
+
+          db.query(aggiornaMezzoSql, [prenotazione.id_mezzo], (err, updateResult) => {
+            if (err) {
+              console.error("Errore aggiornamento mezzo:", err.message);
+              res.status(500).json({
+                error: "Prenotazione terminata, ma errore nel rendere disponibile il mezzo",
+                dettaglio: err.message
+              });
+              return;
+            }
+
+            console.log("Prenotazione terminata:", idPrenotazione);
+            console.log("Mezzo reso disponibile:", prenotazione.id_mezzo);
+            console.log("Durata minuti:", durataMinuti);
+            console.log("Costo totale:", costoTotale);
+            console.log("Righe aggiornate nella tabella mezzi:", updateResult.affectedRows);
+
+            res.json({
+              message: "Corsa terminata correttamente",
+              id_prenotazione: Number(idPrenotazione),
+              id_mezzo: prenotazione.id_mezzo,
+              durata_minuti: durataMinuti,
+              tariffa_minuto: tariffaMinuto,
+              costo_totale: costoTotale
+            });
           });
-          return;
         }
-
-        console.log("Prenotazione terminata:", idPrenotazione);
-        console.log("Mezzo reso disponibile:", prenotazione.id_mezzo);
-        console.log("Righe aggiornate nella tabella mezzi:", updateResult.affectedRows);
-
-        res.json({
-          message: "Prenotazione terminata correttamente",
-          id_prenotazione: idPrenotazione,
-          id_mezzo: prenotazione.id_mezzo
-        });
-      });
+      );
     });
   });
 });

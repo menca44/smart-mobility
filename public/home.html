@@ -470,8 +470,8 @@
       padding: 26px;
       box-shadow: 0 22px 55px rgba(17, 45, 35, 0.14);
       border: 1px solid rgba(255, 255, 255, 0.75);
-      min-height: 760px;
-      height: calc(100vh - 210px);
+      min-height: 850px;
+      height: calc(100vh - 120px);
       display: flex;
       flex-direction: column;
     }
@@ -530,7 +530,7 @@
     #tarantoMap {
       width: 100%;
       height: 100%;
-      min-height: 640px;
+      min-height: 520px;
       border-radius: 24px;
       overflow: hidden;
       border: 1px solid #d6dce3;
@@ -654,11 +654,13 @@
     .bookings-panel {
       display: none;
       background: #ffffff;
-      border-radius: 24px;
-      padding: 24px;
-      box-shadow: 0 14px 34px rgba(17, 45, 35, 0.10);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: 0 10px 24px rgba(17, 45, 35, 0.08);
       border: 1px solid #e0ebe6;
-      margin-top: 24px;
+      margin-top: 14px;
+      max-height: 255px;
+      overflow-y: auto;
       flex-shrink: 0;
     }
 
@@ -667,37 +669,37 @@
     }
 
     .bookings-panel h2 {
-      margin: 0 0 8px;
+      margin: 0 0 6px;
       color: #12372a;
-      font-size: 24px;
+      font-size: 20px;
     }
 
     .bookings-panel p {
-      margin: 0 0 18px;
+      margin: 0 0 12px;
       color: #66736f;
-      font-size: 14px;
+      font-size: 13px;
     }
 
     .booking-card {
       border: 1px solid #e0ebe6;
       background: #f7fbf9;
-      border-radius: 18px;
-      padding: 18px;
-      margin-bottom: 14px;
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 10px;
     }
 
     .booking-card h3 {
-      margin: 0 0 12px;
+      margin: 0 0 8px;
       color: #12372a;
-      font-size: 18px;
+      font-size: 15px;
     }
 
     .booking-row {
       display: flex;
       justify-content: space-between;
-      gap: 16px;
-      margin: 8px 0;
-      font-size: 14px;
+      gap: 12px;
+      margin: 5px 0;
+      font-size: 13px;
       color: #4b5563;
     }
 
@@ -708,24 +710,24 @@
 
     .booking-status {
       display: inline-block;
-      margin-top: 12px;
-      padding: 8px 12px;
+      margin-top: 8px;
+      padding: 6px 10px;
       border-radius: 999px;
       background: #dcfce7;
       color: #166534;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 800;
     }
 
     .end-booking-btn {
       width: 100%;
-      margin-top: 14px;
-      padding: 12px;
+      margin-top: 10px;
+      padding: 10px;
       border: none;
-      border-radius: 12px;
+      border-radius: 10px;
       background: #dc2626;
       color: white;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 800;
       cursor: pointer;
     }
@@ -2147,9 +2149,12 @@
         }
 
         alert(
-          "Prenotazione terminata correttamente.\n" +
-          "Mezzo reso disponibile: " + result.id_mezzo
-        );
+  "Corsa terminata correttamente.\n" +
+  "Mezzo reso disponibile: " + result.id_mezzo + "\n" +
+  "Durata corsa: " + result.durata_minuti + " minuti\n" +
+  "Tariffa: €" + Number(result.tariffa_minuto).toFixed(2) + "/min\n" +
+  "Costo totale: €" + Number(result.costo_totale).toFixed(2)
+);
 
         await caricaMezziDalDatabase();
         await caricaPrenotazioniUtente();
