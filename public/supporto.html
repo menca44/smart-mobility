@@ -86,7 +86,73 @@
       gap: 12px;
       align-items: center;
     }
+/* Menu a tendina in stile Home */
+.dropdown-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
 
+.menu-toggle {
+  width: 46px;
+  height: 46px;
+  border: none;
+  border-radius: 16px;
+  background: var(--verde);
+  color: white;
+  font-size: 24px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(15, 143, 95, 0.24);
+  transition: 0.2s ease;
+}
+
+.menu-toggle:hover {
+  background: var(--verde-scuro);
+  transform: translateY(-1px);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 56px;
+  right: 0;
+  min-width: 245px;
+  background: white;
+  border: 1px solid var(--bordo);
+  border-radius: 22px;
+  box-shadow: var(--ombra);
+  padding: 10px;
+  display: none;
+  z-index: 100;
+}
+
+.dropdown-menu.show {
+  display: block;
+}
+
+.dropdown-menu a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--testo);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 13px 14px;
+  border-radius: 16px;
+  transition: 0.2s ease;
+}
+
+.dropdown-menu a:hover {
+  background: var(--verde-chiaro);
+  color: var(--verde-scuro);
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--bordo);
+  margin: 8px 6px;
+}
     .nav-links a {
       color: var(--testo);
       text-decoration: none;
@@ -636,12 +702,24 @@
       </div>
     </a>
 
-    <div class="nav-links">
-      <a href="home.html">Home</a>
-      <a href="portfolio.html">Portfolio</a>
-      <a href="storico-prenotazioni.html">Storico</a>
-      <a href="account.html">Account</a>
-    </div>
+    <!-- Menu a tendina coerente con la pagina Home -->
+<div class="dropdown-wrapper">
+  <button class="menu-toggle" id="menuToggle" aria-label="Apri menu">
+    ☰
+  </button>
+
+  <div class="dropdown-menu" id="dropdownMenu">
+    <a href="home.html">🏠 Home</a>
+    <a href="account.html">👤 Account</a>
+    <a href="portfolio.html">💳 Portfolio</a>
+    <a href="chi-siamo.html">ℹ️ Chi siamo</a>
+    <a href="supporto.html">🚨 Supporto</a>
+
+    <div class="dropdown-divider"></div>
+
+    <a href="storico-prenotazioni.html">📋 Storico prenotazioni</a>
+  </div>
+</div>
   </nav>
 
   <section class="hero">
@@ -1332,7 +1410,37 @@
     // =====================================================
     // AVVIO PAGINA
     // =====================================================
+// =====================================================
+// MENU A TENDINA
+// =====================================================
 
+// Apro e chiudo il menu a tendina cliccando sul pulsante.
+const menuToggle = document.getElementById("menuToggle");
+const dropdownMenu = document.getElementById("dropdownMenu");
+
+if (menuToggle && dropdownMenu) {
+  menuToggle.addEventListener("click", (event) => {
+    event.stopPropagation();
+    dropdownMenu.classList.toggle("show");
+  });
+
+  // Chiudo il menu se l'utente clicca fuori.
+  document.addEventListener("click", (event) => {
+    if (
+      !dropdownMenu.contains(event.target) &&
+      !menuToggle.contains(event.target)
+    ) {
+      dropdownMenu.classList.remove("show");
+    }
+  });
+
+  // Chiudo il menu quando l'utente clicca su una voce.
+  dropdownMenu.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => {
+      dropdownMenu.classList.remove("show");
+    });
+  });
+}
     document.addEventListener("DOMContentLoaded", async () => {
       if (idConversazioneUtente) {
         document.getElementById("chatSubtitle").textContent =
