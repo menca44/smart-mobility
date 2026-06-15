@@ -2014,31 +2014,20 @@
           : `<span class="popup-status-busy">Occupato / non disponibile</span>`;
 
         const pulsantePrenotazione = mezzoDisponibile
-  ? `<button class="popup-btn" onclick="prenotaMezzo('${mezzo.id_mezzo}')">Prenota mezzo</button>`
-  : `<button class="popup-btn-disabled" disabled>Mezzo non disponibile</button>`;
-
-const pulsanteQr = mezzo.codice_qr
-  ? `<a 
-       class="popup-btn" 
-       style="display:block;text-align:center;text-decoration:none;background:#064663;margin-top:8px;" 
-       href="sblocco-mezzo.html?codice_qr=${encodeURIComponent(mezzo.codice_qr)}"
-     >
-       Apri QR
-     </a>`
-  : "";
+          ? `<button class="popup-btn" onclick="prenotaMezzo('${mezzo.id_mezzo}')">Prenota mezzo</button>`
+          : `<button class="popup-btn-disabled" disabled>Mezzo non disponibile</button>`;
 
         const marker = L.marker([mezzo.latitudine, mezzo.longitudine], { icon: icon })
           .bindPopup(`
-  <strong class="popup-title">${formatTipo(mezzo.tipo)}</strong>
-  ID mezzo: ${mezzo.id_mezzo}<br>
-  Modello: ${mezzo.modello}<br>
-  Stato: ${statoLabel}<br>
-  Batteria: ${mezzo.batteria}%<br>
-  Area: ${mezzo.area}<br>
-  Tariffa: €${mezzo.tariffa_minuto}/min<br>
-  ${pulsantePrenotazione}
-  ${pulsanteQr}
-`);
+            <strong class="popup-title">${formatTipo(mezzo.tipo)}</strong>
+            ID mezzo: ${mezzo.id_mezzo}<br>
+            Modello: ${mezzo.modello}<br>
+            Stato: ${statoLabel}<br>
+            Batteria: ${mezzo.batteria}%<br>
+            Area: ${mezzo.area}<br>
+            Tariffa: €${mezzo.tariffa_minuto}/min<br>
+            ${pulsantePrenotazione}
+          `);
 
         vehiclesLayer.addLayer(marker);
       });
