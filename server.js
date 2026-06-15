@@ -126,6 +126,7 @@ app.get("/api/mezzi", (req, res) => {
   area,
   codice_qr
 FROM mezzi
+`;
 
   db.query(sql, (error, rows) => {
     if (error) {
