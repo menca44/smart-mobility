@@ -2007,120 +2007,151 @@
     // CANCELLAZIONE DELLA PRENOTAZIONE
     // =====================================================
 
-    async function cancellaPrenotazione() {
-      if (
-        !prenotazioneCorrente ||
-        !idPrenotazioneCorrente
-      ) {
-        mostraMessaggio(
-          "Nessuna prenotazione valida da cancellare.",
-          "error"
-        );
+    // =====================================================
+// CANCELLAZIONE DELLA PRENOTAZIONE
+// =====================================================
 
-        return;
+async function cancellaPrenotazione() {
+  if (
+    !prenotazioneCorrente ||
+    !idPrenotazioneCorrente
+  ) {
+    mostraMessaggio(
+      "Nessuna prenotazione valida da cancellare.",
+      "error"
+    );
+
+    return;
+  }
+
+  const statoSblocco = String(
+    prenotazioneCorrente.stato_sblocco ||
+    "bloccato"
+  )
+    .trim()
+    .toLowerCase();
+
+  if (statoSblocco === "sbloccato") {
+    mostraMessaggio(
+      "Il mezzo è già stato sbloccato. Devi terminare la corsa invece di cancellare la prenotazione.",
+      "error"
+    );
+
+    return;
+  }
+
+  const conferma = window.confirm(
+    "Vuoi davvero cancellare la prenotazione?\n\n" +
+    "Il mezzo tornerà immediatamente disponibile."
+  );
+
+  if (!conferma) {
+    return;
+  }
+
+  const pulsante = document.getElementById(
+    "cancellaPrenotazioneBtn"
+  );
+
+  pulsante.disabled = true;
+  pulsante.textContent =
+    "Cancellazione in corso...";
+
+  mostraMessaggio(
+    "Cancellazione della prenotazione in corso...",
+    "info"
+  );
+
+  try {
+    await fermaFotocamera();
+
+    const response = await fetch(
+      `/api/prenotazioni/${idPrenotazioneCorrente}/annulla`,
+      {
+        method: "PUT",
+
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+
+        body: JSON.stringify({
+          id_utente: idUtenteCorrente
+        })
       }
+    );
 
-      const statoSblocco =
-        String(
-          prenotazioneCorrente.stato_sblocco ||
-          "bloccato"
-        )
-          .trim()
-          .toLowerCase();
+    /*
+      Leggiamo prima la risposta come testo.
+      In questo modo evitiamo l'errore "Unexpected token <"
+      quando Railway restituisce una pagina HTML.
+    */
+    const testoRisposta =
+      await response.text();
 
-      if (statoSblocco === "sbloccato") {
-        mostraMessaggio(
-          "Il mezzo è già stato sbloccato. Devi terminare la corsa invece di cancellare la prenotazione.",
-          "error"
-        );
+    let result = null;
 
-        return;
-      }
-
-      const conferma =
-        window.confirm(
-          "Vuoi davvero cancellare la prenotazione?\n\n" +
-          "Il mezzo tornerà immediatamente disponibile."
-        );
-
-      if (!conferma) {
-        return;
-      }
-
-      const pulsante =
-        document.getElementById(
-          "cancellaPrenotazioneBtn"
-        );
-
-      pulsante.disabled = true;
-      pulsante.textContent =
-        "Cancellazione in corso...";
-
-      mostraMessaggio(
-        "Cancellazione della prenotazione in corso...",
-        "info"
+    try {
+      result = testoRisposta
+        ? JSON.parse(testoRisposta)
+        : {};
+    } catch (parseError) {
+      console.error(
+        "La risposta del server non è JSON:",
+        testoRisposta
       );
 
-      try {
-        await fermaFotocamera();
-
-        const response = await fetch(
-          `/api/prenotazioni/${idPrenotazioneCorrente}/annulla`,
-          {
-            method: "PUT",
-
-            headers: {
-              "Content-Type":
-                "application/json"
-            },
-
-            body: JSON.stringify({
-              id_utente:
-                idUtenteCorrente
-            })
-          }
-        );
-
-        const result =
-          await response.json();
-
-        if (!response.ok) {
-          throw new Error(
-            result.error ||
-            "Non è stato possibile cancellare la prenotazione"
-          );
-        }
-
-        mostraMessaggio(
-          "Prenotazione cancellata. Il mezzo è nuovamente disponibile.",
-          "success"
-        );
-
-        document.getElementById(
-          "areaSblocco"
-        ).style.display = "none";
-
-        setTimeout(() => {
-          window.location.href =
-            "home.html";
-        }, 1600);
-      } catch (error) {
-        console.error(
-          "Errore cancellazione prenotazione:",
-          error
-        );
-
-        mostraMessaggio(
-          error.message,
-          "error"
-        );
-
-        pulsante.disabled = false;
-        pulsante.textContent =
-          "Cancella prenotazione";
-      }
+      throw new Error(
+        `Il server ha restituito una risposta non valida. ` +
+        `Codice HTTP: ${response.status}. ` +
+        `Controlla che la rotta di cancellazione sia pubblicata su Railway.`
+      );
     }
 
+    if (!response.ok) {
+      throw new Error(
+        result.error ||
+        result.dettaglio ||
+        "Non è stato possibile cancellare la prenotazione"
+      );
+    }
+
+    mostraMessaggio(
+      result.message ||
+      "Prenotazione cancellata. Il mezzo è nuovamente disponibile.",
+      "success"
+    );
+
+    document.getElementById(
+      "areaSblocco"
+    ).style.display = "none";
+
+    /*
+      Aggiorniamo anche i dati locali.
+    */
+    prenotazioneCorrente.stato_prenotazione =
+      "annullata";
+
+    setTimeout(() => {
+      window.location.href =
+        "home.html";
+    }, 1600);
+  } catch (error) {
+    console.error(
+      "Errore cancellazione prenotazione:",
+      error
+    );
+
+    mostraMessaggio(
+      error.message,
+      "error"
+    );
+
+    pulsante.disabled = false;
+    pulsante.textContent =
+      "Cancella prenotazione";
+  }
+}
     // =====================================================
     // EVENTI
     // =====================================================
