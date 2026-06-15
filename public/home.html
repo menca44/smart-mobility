@@ -1752,6 +1752,7 @@
     <span class="ai-chat-launcher-badge">?</span>
   </button>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script>
@@ -2018,20 +2019,48 @@
           : `<button class="popup-btn-disabled" disabled>Mezzo non disponibile</button>`;
 
         const marker = L.marker([mezzo.latitudine, mezzo.longitudine], { icon: icon })
-          .bindPopup(`
-            <strong class="popup-title">${formatTipo(mezzo.tipo)}</strong>
-            ID mezzo: ${mezzo.id_mezzo}<br>
-            Modello: ${mezzo.modello}<br>
-            Stato: ${statoLabel}<br>
-            Batteria: ${mezzo.batteria}%<br>
-            Area: ${mezzo.area}<br>
-            Tariffa: €${mezzo.tariffa_minuto}/min<br>
-            ${pulsantePrenotazione}
-          `);
+  .bindPopup(`
+    <strong class="popup-title">${formatTipo(mezzo.tipo)}</strong>
+    ID mezzo: ${mezzo.id_mezzo}<br>
+    Modello: ${mezzo.modello}<br>
+    Stato: ${statoLabel}<br>
+    Batteria: ${mezzo.batteria}%<br>
+    Area: ${mezzo.area}<br>
+    Tariffa: €${mezzo.tariffa_minuto}/min<br>
+
+    ${pulsantePrenotazione}
+
+    <button
+      class="popup-btn"
+      style="background:#064663;margin-top:8px;"
+      onclick="mostraQrMezzo('${mezzo.codice_qr}','${mezzo.id_mezzo}')"
+    >
+      Mostra QR
+    </button>
+
+    <div id="qr-${mezzo.id_mezzo}" style="margin-top:10px;"></div>
+  `);
 
         vehiclesLayer.addLayer(marker);
       });
     }
+
+    function mostraQrMezzo(codiceQr, idMezzo) {
+
+  const contenitore =
+    document.getElementById("qr-" + idMezzo);
+
+  if (!contenitore) return;
+
+  contenitore.innerHTML = "";
+
+  new QRCode(contenitore, {
+    text: codiceQr,
+    width: 150,
+    height: 150
+  });
+
+}
 
     function aggiornaStatoFiltri() {
       const filterButtons = document.querySelectorAll(".legend-item");
