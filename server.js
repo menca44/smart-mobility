@@ -767,10 +767,14 @@ app.get(
         p.id_utente,
         p.id_mezzo,
         p.stato_prenotazione,
-        p.stato_sblocco,
-        p.data_ora_prenotazione,
-        p.data_ora_scadenza,
-        p.data_ora_sblocco,
+p.stato_sblocco,
+p.stato_corsa,
+p.data_ora_prenotazione,
+p.data_ora_scadenza,
+p.data_ora_sblocco,
+p.data_ora_inizio_pausa,
+p.data_ora_fine_ultima_pausa,
+p.secondi_pausa_totali,
         m.tipo,
         m.modello,
         m.stato AS stato_mezzo,
@@ -1240,23 +1244,27 @@ if (
                 }
 
                 const aggiornaSql = `
-                  UPDATE prenotazioni
-                  SET
-                    stato_sblocco = 'sbloccato',
-                    data_ora_sblocco = NOW()
-                  WHERE id_prenotazione = ?
-                    AND id_utente = ?
-                    AND LOWER(
-                      TRIM(
-                        stato_prenotazione
-                      )
-                    ) = 'attiva'
-                    AND LOWER(
-                      TRIM(
-                        stato_sblocco
-                      )
-                    ) <> 'sbloccato'
-                `;
+  UPDATE prenotazioni
+  SET
+    stato_sblocco = 'sbloccato',
+    stato_corsa = 'in_corso',
+    data_ora_sblocco = NOW(),
+    data_ora_inizio_pausa = NULL,
+    data_ora_fine_ultima_pausa = NULL,
+    secondi_pausa_totali = 0
+  WHERE id_prenotazione = ?
+    AND id_utente = ?
+    AND LOWER(
+      TRIM(
+        stato_prenotazione
+      )
+    ) = 'attiva'
+    AND LOWER(
+      TRIM(
+        stato_sblocco
+      )
+    ) <> 'sbloccato'
+`;
 
                 connection.query(
                   aggiornaSql,
@@ -1345,7 +1353,10 @@ if (
                               .modello,
 
                           stato_sblocco:
-                            "sbloccato"
+  "sbloccato",
+
+stato_corsa:
+  "in_corso"
                         });
                       }
                     );
@@ -1676,7 +1687,736 @@ app.put(
     );
   }
 );
+// =====================================================
+// MESSA IN PAUSA DELLA CORSA
+// =====================================================
 
+app.put(
+  "/api/prenotazioni/:id_prenotazione/pausa",
+  (req, res) => {
+    const idPrenotazione =
+      Number(req.params.id_prenotazione);
+
+    const idUtente =
+      Number(req.body.id_utente);
+
+    // Controlla che gli identificativi siano validi.
+    if (
+      !Number.isInteger(idPrenotazione) ||
+      idPrenotazione <= 0 ||
+      !Number.isInteger(idUtente) ||
+      idUtente <= 0
+    ) {
+      res.status(400).json({
+        error:
+          "Dati della prenotazione non validi"
+      });
+
+      return;
+    }
+
+    db.getConnection(
+      (connectionError, connection) => {
+        if (connectionError) {
+          res.status(500).json({
+            error:
+              "Errore di connessione al database",
+            dettaglio:
+              connectionError.message
+          });
+
+          return;
+        }
+
+        connection.beginTransaction(
+          (transactionError) => {
+            if (transactionError) {
+              connection.release();
+
+              res.status(500).json({
+                error:
+                  "Errore durante l'avvio della pausa",
+                dettaglio:
+                  transactionError.message
+              });
+
+              return;
+            }
+
+            /*
+             * Recupera la prenotazione e la blocca temporaneamente
+             * durante la transazione.
+             */
+            const cercaPrenotazioneSql = `
+              SELECT
+                id_prenotazione,
+                id_utente,
+                stato_prenotazione,
+                stato_sblocco,
+                stato_corsa,
+                data_ora_inizio_pausa,
+                data_ora_fine_ultima_pausa
+              FROM prenotazioni
+              WHERE id_prenotazione = ?
+                AND id_utente = ?
+              FOR UPDATE
+            `;
+
+            connection.query(
+              cercaPrenotazioneSql,
+              [
+                idPrenotazione,
+                idUtente
+              ],
+              (
+                searchError,
+                rows
+              ) => {
+                if (searchError) {
+                  return connection.rollback(
+                    () => {
+                      connection.release();
+
+                      res.status(500).json({
+                        error:
+                          "Errore durante il controllo della corsa",
+                        dettaglio:
+                          searchError.message
+                      });
+                    }
+                  );
+                }
+
+                if (rows.length === 0) {
+                  return connection.rollback(
+                    () => {
+                      connection.release();
+
+                      res.status(404).json({
+                        error:
+                          "Prenotazione non trovata oppure non appartenente all'utente"
+                      });
+                    }
+                  );
+                }
+
+                const prenotazione =
+                  rows[0];
+
+                const statoPrenotazione =
+                  String(
+                    prenotazione
+                      .stato_prenotazione ||
+                    ""
+                  )
+                    .trim()
+                    .toLowerCase();
+
+                const statoSblocco =
+                  String(
+                    prenotazione
+                      .stato_sblocco ||
+                    ""
+                  )
+                    .trim()
+                    .toLowerCase();
+
+                const statoCorsa =
+                  String(
+                    prenotazione
+                      .stato_corsa ||
+                    "in_corso"
+                  )
+                    .trim()
+                    .toLowerCase();
+
+                // La pausa è consentita solo su una corsa attiva.
+                if (
+                  statoPrenotazione !==
+                  "attiva"
+                ) {
+                  return connection.rollback(
+                    () => {
+                      connection.release();
+
+                      res.status(409).json({
+                        error:
+                          "La prenotazione non è attiva"
+                      });
+                    }
+                  );
+                }
+
+                // Il mezzo deve essere già stato sbloccato.
+                if (
+                  statoSblocco !==
+                  "sbloccato"
+                ) {
+                  return connection.rollback(
+                    () => {
+                      connection.release();
+
+                      res.status(409).json({
+                        error:
+                          "Devi sbloccare il mezzo prima di mettere in pausa la corsa"
+                      });
+                    }
+                  );
+                }
+
+                // Impedisce di mettere nuovamente in pausa
+                // una corsa che è già in pausa.
+                if (
+                  statoCorsa ===
+                  "in_pausa"
+                ) {
+                  return connection.rollback(
+                    () => {
+                      connection.release();
+
+                      res.status(409).json({
+                        error:
+                          "La corsa è già in pausa"
+                      });
+                    }
+                  );
+                }
+
+                /*
+                 * Verifica che siano trascorsi almeno 15 minuti
+                 * dalla fine dell'ultima pausa.
+                 */
+                if (
+                  prenotazione
+                    .data_ora_fine_ultima_pausa
+                ) {
+                  const fineUltimaPausa =
+                    new Date(
+                      prenotazione
+                        .data_ora_fine_ultima_pausa
+                    );
+
+                  const millisecondiTrascorsi =
+                    Date.now() -
+                    fineUltimaPausa.getTime();
+
+                  const secondiTrascorsi =
+                    Math.floor(
+                      millisecondiTrascorsi /
+                      1000
+                    );
+
+                  const attesaSecondi =
+                    15 * 60;
+
+                  if (
+                    secondiTrascorsi <
+                    attesaSecondi
+                  ) {
+                    const secondiRimanenti =
+                      attesaSecondi -
+                      secondiTrascorsi;
+
+                    const minutiRimanenti =
+                      Math.ceil(
+                        secondiRimanenti /
+                        60
+                      );
+
+                    return connection.rollback(
+                      () => {
+                        connection.release();
+
+                        res.status(409).json({
+                          error:
+                            `Potrai utilizzare nuovamente la pausa tra ${minutiRimanenti} minuti`,
+                          secondi_rimanenti:
+                            secondiRimanenti
+                        });
+                      }
+                    );
+                  }
+                }
+
+                // Avvia la pausa.
+                const avviaPausaSql = `
+                  UPDATE prenotazioni
+                  SET
+                    stato_corsa =
+                      'in_pausa',
+                    data_ora_inizio_pausa =
+                      NOW()
+                  WHERE id_prenotazione = ?
+                    AND id_utente = ?
+                    AND stato_corsa =
+                      'in_corso'
+                `;
+
+                connection.query(
+                  avviaPausaSql,
+                  [
+                    idPrenotazione,
+                    idUtente
+                  ],
+                  (
+                    updateError,
+                    updateResult
+                  ) => {
+                    if (updateError) {
+                      return connection.rollback(
+                        () => {
+                          connection.release();
+
+                          res.status(500).json({
+                            error:
+                              "Errore durante la messa in pausa della corsa",
+                            dettaglio:
+                              updateError.message
+                          });
+                        }
+                      );
+                    }
+
+                    if (
+                      updateResult
+                        .affectedRows === 0
+                    ) {
+                      return connection.rollback(
+                        () => {
+                          connection.release();
+
+                          res.status(409).json({
+                            error:
+                              "Non è stato possibile mettere in pausa la corsa"
+                          });
+                        }
+                      );
+                    }
+
+                    connection.commit(
+                      (commitError) => {
+                        if (
+                          commitError
+                        ) {
+                          return connection.rollback(
+                            () => {
+                              connection.release();
+
+                              res.status(500).json({
+                                error:
+                                  "Errore durante il completamento della pausa",
+                                dettaglio:
+                                  commitError.message
+                              });
+                            }
+                          );
+                        }
+
+                        connection.release();
+
+                        res.json({
+                          message:
+                            "Corsa messa in pausa correttamente",
+
+                          id_prenotazione:
+                            idPrenotazione,
+
+                          stato_corsa:
+                            "in_pausa",
+
+                          durata_massima_secondi:
+                            300
+                        });
+                      }
+                    );
+                  }
+                );
+              }
+            );
+          }
+        );
+      }
+    );
+  }
+);
+// =====================================================
+// RIPRESA DELLA CORSA DOPO LA PAUSA
+// =====================================================
+
+app.put(
+  "/api/prenotazioni/:id_prenotazione/riprendi",
+  (req, res) => {
+    const idPrenotazione =
+      Number(req.params.id_prenotazione);
+
+    const idUtente =
+      Number(req.body.id_utente);
+
+    // Controlla che gli identificativi ricevuti siano validi.
+    if (
+      !Number.isInteger(idPrenotazione) ||
+      idPrenotazione <= 0 ||
+      !Number.isInteger(idUtente) ||
+      idUtente <= 0
+    ) {
+      res.status(400).json({
+        error:
+          "Dati della prenotazione non validi"
+      });
+
+      return;
+    }
+
+    db.getConnection(
+      (connectionError, connection) => {
+        if (connectionError) {
+          res.status(500).json({
+            error:
+              "Errore di connessione al database",
+            dettaglio:
+              connectionError.message
+          });
+
+          return;
+        }
+
+        connection.beginTransaction(
+          (transactionError) => {
+            if (transactionError) {
+              connection.release();
+
+              res.status(500).json({
+                error:
+                  "Errore durante l'avvio della ripresa della corsa",
+                dettaglio:
+                  transactionError.message
+              });
+
+              return;
+            }
+
+            /*
+             * Recupera la prenotazione e la blocca
+             * per evitare modifiche contemporanee.
+             */
+            const cercaPrenotazioneSql = `
+              SELECT
+                id_prenotazione,
+                id_utente,
+                stato_prenotazione,
+                stato_sblocco,
+                stato_corsa,
+                data_ora_inizio_pausa,
+                secondi_pausa_totali
+              FROM prenotazioni
+              WHERE id_prenotazione = ?
+                AND id_utente = ?
+              FOR UPDATE
+            `;
+
+            connection.query(
+              cercaPrenotazioneSql,
+              [
+                idPrenotazione,
+                idUtente
+              ],
+              (
+                searchError,
+                rows
+              ) => {
+                if (searchError) {
+                  return connection.rollback(
+                    () => {
+                      connection.release();
+
+                      res.status(500).json({
+                        error:
+                          "Errore durante il controllo della pausa",
+                        dettaglio:
+                          searchError.message
+                      });
+                    }
+                  );
+                }
+
+                if (rows.length === 0) {
+                  return connection.rollback(
+                    () => {
+                      connection.release();
+
+                      res.status(404).json({
+                        error:
+                          "Prenotazione non trovata oppure non appartenente all'utente"
+                      });
+                    }
+                  );
+                }
+
+                const prenotazione =
+                  rows[0];
+
+                const statoPrenotazione =
+                  String(
+                    prenotazione
+                      .stato_prenotazione ||
+                    ""
+                  )
+                    .trim()
+                    .toLowerCase();
+
+                const statoSblocco =
+                  String(
+                    prenotazione
+                      .stato_sblocco ||
+                    ""
+                  )
+                    .trim()
+                    .toLowerCase();
+
+                const statoCorsa =
+                  String(
+                    prenotazione
+                      .stato_corsa ||
+                    ""
+                  )
+                    .trim()
+                    .toLowerCase();
+
+                if (
+                  statoPrenotazione !==
+                  "attiva"
+                ) {
+                  return connection.rollback(
+                    () => {
+                      connection.release();
+
+                      res.status(409).json({
+                        error:
+                          "La prenotazione non è attiva"
+                      });
+                    }
+                  );
+                }
+
+                if (
+                  statoSblocco !==
+                  "sbloccato"
+                ) {
+                  return connection.rollback(
+                    () => {
+                      connection.release();
+
+                      res.status(409).json({
+                        error:
+                          "Il mezzo non è stato sbloccato"
+                      });
+                    }
+                  );
+                }
+
+                if (
+                  statoCorsa !==
+                  "in_pausa"
+                ) {
+                  return connection.rollback(
+                    () => {
+                      connection.release();
+
+                      res.status(409).json({
+                        error:
+                          "La corsa non è in pausa"
+                      });
+                    }
+                  );
+                }
+
+                if (
+                  !prenotazione
+                    .data_ora_inizio_pausa
+                ) {
+                  return connection.rollback(
+                    () => {
+                      connection.release();
+
+                      res.status(409).json({
+                        error:
+                          "Data di inizio pausa non disponibile"
+                      });
+                    }
+                  );
+                }
+
+                /*
+                 * Calcola la durata effettiva della pausa.
+                 * Vengono conteggiati al massimo 300 secondi,
+                 * cioè 5 minuti.
+                 */
+                const calcolaPausaSql = `
+                  SELECT
+                    LEAST(
+                      GREATEST(
+                        TIMESTAMPDIFF(
+                          SECOND,
+                          ?,
+                          NOW()
+                        ),
+                        0
+                      ),
+                      300
+                    ) AS secondi_pausa
+                `;
+
+                connection.query(
+                  calcolaPausaSql,
+                  [
+                    prenotazione
+                      .data_ora_inizio_pausa
+                  ],
+                  (
+                    durationError,
+                    durationRows
+                  ) => {
+                    if (durationError) {
+                      return connection.rollback(
+                        () => {
+                          connection.release();
+
+                          res.status(500).json({
+                            error:
+                              "Errore durante il calcolo della pausa",
+                            dettaglio:
+                              durationError.message
+                          });
+                        }
+                      );
+                    }
+
+                    const secondiPausa =
+                      Number(
+                        durationRows[0]
+                          .secondi_pausa ||
+                        0
+                      );
+
+                    /*
+                     * Somma la pausa al totale,
+                     * riporta la corsa in esecuzione
+                     * e salva la fine dell'ultima pausa.
+                     */
+                    const riprendiSql = `
+                      UPDATE prenotazioni
+                      SET
+                        stato_corsa =
+                          'in_corso',
+
+                        secondi_pausa_totali =
+                          secondi_pausa_totali + ?,
+
+                        data_ora_fine_ultima_pausa =
+                          NOW(),
+
+                        data_ora_inizio_pausa =
+                          NULL
+
+                      WHERE id_prenotazione = ?
+                        AND id_utente = ?
+                        AND stato_corsa =
+                          'in_pausa'
+                    `;
+
+                    connection.query(
+                      riprendiSql,
+                      [
+                        secondiPausa,
+                        idPrenotazione,
+                        idUtente
+                      ],
+                      (
+                        updateError,
+                        updateResult
+                      ) => {
+                        if (updateError) {
+                          return connection.rollback(
+                            () => {
+                              connection.release();
+
+                              res.status(500).json({
+                                error:
+                                  "Errore durante la ripresa della corsa",
+                                dettaglio:
+                                  updateError.message
+                              });
+                            }
+                          );
+                        }
+
+                        if (
+                          updateResult
+                            .affectedRows === 0
+                        ) {
+                          return connection.rollback(
+                            () => {
+                              connection.release();
+
+                              res.status(409).json({
+                                error:
+                                  "Non è stato possibile riprendere la corsa"
+                              });
+                            }
+                          );
+                        }
+
+                        connection.commit(
+                          (commitError) => {
+                            if (
+                              commitError
+                            ) {
+                              return connection.rollback(
+                                () => {
+                                  connection.release();
+
+                                  res.status(500).json({
+                                    error:
+                                      "Errore durante il completamento della ripresa",
+                                    dettaglio:
+                                      commitError.message
+                                  });
+                                }
+                              );
+                            }
+
+                            connection.release();
+
+                            res.json({
+                              message:
+                                "Corsa ripresa correttamente",
+
+                              id_prenotazione:
+                                idPrenotazione,
+
+                              stato_corsa:
+                                "in_corso",
+
+                              secondi_pausa_registrati:
+                                secondiPausa,
+
+                              attesa_nuova_pausa_secondi:
+                                900
+                            });
+                          }
+                        );
+                      }
+                    );
+                  }
+                );
+              }
+            );
+          }
+        );
+      }
+    );
+  }
+);
 // =====================================================
 // TERMINE DELLA CORSA
 // =====================================================
@@ -1738,8 +2478,11 @@ app.put(
     p.id_mezzo,
     p.stato_prenotazione,
     p.stato_sblocco,
+    p.stato_corsa,
     p.data_ora_prenotazione,
     p.data_ora_sblocco,
+    p.data_ora_inizio_pausa,
+    p.secondi_pausa_totali,
     m.tariffa_minuto
   FROM prenotazioni p
   JOIN mezzi m
@@ -1841,25 +2584,67 @@ app.put(
                   prenotazione
                     .data_ora_prenotazione;
 
-                const durataSql = `
-                  SELECT
-                    GREATEST(
-                      TIMESTAMPDIFF(
-                        MINUTE,
-                        ?,
-                        NOW()
-                      ),
-                      1
-                    ) AS durata_minuti
-                `;
+                /*
+ * Calcola la durata tariffata in secondi.
+ *
+ * Dal tempo totale vengono sottratti:
+ * - i secondi delle pause già completate;
+ * - l'eventuale pausa ancora attiva, fino a un massimo di 300 secondi.
+ */
+const durataSql = `
+  SELECT
+    GREATEST(
+      TIMESTAMPDIFF(
+        SECOND,
+        ?,
+        NOW()
+      )
+      - ?
+      - CASE
+          WHEN ? = 'in_pausa'
+            AND ? IS NOT NULL
+          THEN LEAST(
+            GREATEST(
+              TIMESTAMPDIFF(
+                SECOND,
+                ?,
+                NOW()
+              ),
+              0
+            ),
+            300
+          )
+          ELSE 0
+        END,
+      1
+    ) AS secondi_corsa
+`;
 
-                connection.query(
-                  durataSql,
-                  [dataInizio],
-                  (
-                    durationError,
-                    durationRows
-                  ) => {
+connection.query(
+  durataSql,
+  [
+    dataInizio,
+
+    Number(
+      prenotazione.secondi_pausa_totali ||
+      0
+    ),
+
+    String(
+      prenotazione.stato_corsa ||
+      "in_corso"
+    )
+      .trim()
+      .toLowerCase(),
+
+    prenotazione.data_ora_inizio_pausa,
+
+    prenotazione.data_ora_inizio_pausa
+  ],
+  (
+    durationError,
+    durationRows
+  ) => {
                     if (
                       durationError
                     ) {
@@ -1879,11 +2664,24 @@ app.put(
                       );
                     }
 
-                    const durataMinuti =
-                      Number(
-                        durationRows[0]
-                          .durata_minuti
-                      );
+                    const secondiCorsa =
+  Number(
+    durationRows[0]
+      .secondi_corsa ||
+    1
+  );
+
+/*
+ * Arrotonda il tempo tariffato al minuto superiore.
+ * Almeno un minuto viene sempre addebitato.
+ */
+const durataMinuti =
+  Math.max(
+    Math.ceil(
+      secondiCorsa / 60
+    ),
+    1
+  );
 
                     const tariffaMinuto =
                       Number(

@@ -738,6 +738,161 @@
       padding-right: 24px;
       text-decoration: none;
     }
+    /* =====================================================
+   CONTROLLI DELLA CORSA
+   ===================================================== */
+
+.ride-status-card {
+  margin-top: 24px;
+  padding: 20px;
+
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid var(--bordo);
+
+  text-align: left;
+}
+
+.ride-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  padding: 11px 0;
+  border-bottom: 1px solid #e4eee9;
+
+  color: var(--grigio);
+  font-size: 14px;
+}
+
+.ride-status-row:last-child {
+  border-bottom: none;
+}
+
+.ride-status-row strong {
+  color: var(--testo);
+  text-align: right;
+}
+
+.ride-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 7px 12px;
+  border-radius: 999px;
+
+  background: var(--verde-chiaro);
+  color: var(--verde-scuro);
+
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.ride-status-badge.paused {
+  background: #fff4d6;
+  color: #9a6700;
+}
+
+.pause-timer-box {
+  display: none;
+  margin-top: 18px;
+  padding: 18px;
+
+  border-radius: 18px;
+  background: #fff8df;
+  border: 1px solid #f0dfa4;
+
+  text-align: center;
+}
+
+.pause-timer-box.active {
+  display: block;
+}
+
+.pause-timer-label {
+  display: block;
+  margin-bottom: 7px;
+
+  color: #785d0a;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.pause-timer-value {
+  display: block;
+
+  color: #785d0a;
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.pause-help {
+  margin: 8px 0 0;
+
+  color: #876d20;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.ride-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  margin-top: 20px;
+}
+
+.btn-pause {
+  background: #f59e0b;
+  color: #ffffff;
+  box-shadow: 0 12px 24px rgba(245, 158, 11, 0.22);
+}
+
+.btn-pause:hover {
+  background: #d97706;
+}
+
+.btn-resume {
+  background: var(--verde);
+  color: #ffffff;
+  box-shadow: 0 12px 24px rgba(7, 150, 105, 0.22);
+}
+
+.btn-resume:hover {
+  background: var(--verde-scuro);
+}
+
+.btn-end-ride {
+  background: var(--rosso);
+  color: #ffffff;
+  box-shadow: 0 12px 24px rgba(201, 52, 52, 0.2);
+}
+
+.btn-end-ride:hover {
+  background: var(--rosso-scuro);
+}
+
+.pause-cooldown {
+  display: none;
+  margin-top: 14px;
+  padding: 13px;
+
+  border-radius: 14px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+
+  color: #1d4f91;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.pause-cooldown.active {
+  display: block;
+}
 
     @media (max-width: 850px) {
       .layout {
@@ -754,6 +909,9 @@
     }
 
     @media (max-width: 560px) {
+        .ride-actions {
+  grid-template-columns: 1fr;
+}
       .navbar {
         min-height: 90px;
         padding:
@@ -1008,26 +1166,113 @@
         </div>
 
         <div
-          id="pannelloSuccesso"
-          class="success-panel"
+  id="pannelloSuccesso"
+  class="success-panel"
+>
+  <div class="success-icon">
+    ✓
+  </div>
+
+  <h2 id="titoloCorsa">
+    Mezzo sbloccato
+  </h2>
+
+  <p id="testoSuccesso">
+    Il mezzo è pronto. Puoi iniziare la corsa.
+  </p>
+
+  <div class="ride-status-card">
+
+    <div class="ride-status-row">
+      <span>Stato corsa</span>
+
+      <strong>
+        <span
+          id="statoCorsaBadge"
+          class="ride-status-badge"
         >
-          <div class="success-icon">
-            ✓
-          </div>
+          In corso
+        </span>
+      </strong>
+    </div>
 
-          <h2>Mezzo sbloccato</h2>
+    <div class="ride-status-row">
+      <span>Mezzo</span>
 
-          <p id="testoSuccesso">
-            Il mezzo è pronto. Puoi iniziare la corsa.
-          </p>
+      <strong id="mezzoCorsaLabel">
+        Non disponibile
+      </strong>
+    </div>
 
-          <a
-            href="home.html"
-            class="btn btn-primary"
-          >
-            Torna alla Home
-          </a>
-        </div>
+    <div class="ride-status-row">
+      <span>Tariffa</span>
+
+      <strong id="tariffaCorsaLabel">
+        €0.00/min
+      </strong>
+    </div>
+
+    <div class="ride-status-row">
+      <span>Tempo di pausa totale</span>
+
+      <strong id="pausaTotaleLabel">
+        0 minuti
+      </strong>
+    </div>
+
+  </div>
+
+  <div
+    id="pauseTimerBox"
+    class="pause-timer-box"
+  >
+    <span class="pause-timer-label">
+      Tempo restante della pausa
+    </span>
+
+    <span
+      id="pauseTimerValue"
+      class="pause-timer-value"
+    >
+      05:00
+    </span>
+
+    <p class="pause-help">
+      Durante la pausa la tariffa è sospesa.
+      La corsa ripartirà automaticamente allo scadere dei 5 minuti.
+    </p>
+  </div>
+
+  <div
+    id="pauseCooldownBox"
+    class="pause-cooldown"
+  >
+    Potrai utilizzare nuovamente la pausa tra
+    <strong id="pauseCooldownValue">
+      15:00
+    </strong>.
+  </div>
+
+  <div class="ride-actions">
+
+    <button
+      id="pausaRiprendiBtn"
+      class="btn btn-pause"
+      type="button"
+    >
+      ⏸ Metti in pausa
+    </button>
+
+    <button
+      id="terminaCorsaBtn"
+      class="btn btn-end-ride"
+      type="button"
+    >
+      ■ Termina corsa
+    </button>
+
+  </div>
+</div>
       </section>
 
     </section>
@@ -1047,6 +1292,17 @@
     let lettoreQr = null;
     let fotocameraAttiva = false;
     let scansioneInElaborazione = false;
+    // Gestione pausa e stato della corsa.
+let statoCorsaCorrente = "in_corso";
+
+let intervalloPausa = null;
+let intervalloCooldownPausa = null;
+
+const DURATA_MASSIMA_PAUSA_SECONDI =
+  5 * 60;
+
+const ATTESA_NUOVA_PAUSA_SECONDI =
+  15 * 60;
 
     // =====================================================
     // MESSAGGI DELLA PAGINA
@@ -1498,6 +1754,21 @@
 
         prenotazioneCorrente.stato_sblocco =
           "sbloccato";
+          prenotazioneCorrente.stato_corsa =
+  result.stato_corsa ||
+  "in_corso";
+
+prenotazioneCorrente.data_ora_sblocco =
+  new Date().toISOString();
+
+prenotazioneCorrente.data_ora_inizio_pausa =
+  null;
+
+prenotazioneCorrente.data_ora_fine_ultima_pausa =
+  null;
+
+prenotazioneCorrente.secondi_pausa_totali =
+  0;
 
         await fermaFotocamera();
 
@@ -1520,25 +1791,115 @@
     }
 
     function mostraPannelloSuccesso(
-      result = null
-    ) {
-      document.getElementById(
-        "areaSblocco"
-      ).style.display = "none";
+  result = null
+) {
+  document.getElementById(
+    "areaSblocco"
+  ).style.display = "none";
 
-      document.getElementById(
-        "pannelloSuccesso"
-      ).classList.add("active");
+  document.getElementById(
+    "pannelloSuccesso"
+  ).classList.add("active");
 
-      if (result) {
-        document.getElementById(
-          "testoSuccesso"
-        ).textContent =
-          `${result.tipo || "Mezzo"} ` +
-          `${result.modello || ""} ` +
-          "sbloccato correttamente. Puoi iniziare la corsa.";
-      }
-    }
+  /*
+   * Se la funzione viene chiamata subito dopo lo sblocco,
+   * aggiorniamo anche i dati locali della prenotazione.
+   */
+  if (result) {
+    prenotazioneCorrente.stato_sblocco =
+      "sbloccato";
+
+    prenotazioneCorrente.stato_corsa =
+      result.stato_corsa ||
+      "in_corso";
+
+    document.getElementById(
+      "testoSuccesso"
+    ).textContent =
+      `${result.tipo || "Mezzo"} ` +
+      `${result.modello || ""} ` +
+      "sbloccato correttamente. Puoi iniziare la corsa.";
+  }
+
+  /*
+   * Recupera lo stato della corsa restituito dal server.
+   */
+  statoCorsaCorrente =
+    String(
+      prenotazioneCorrente
+        ?.stato_corsa ||
+      "in_corso"
+    )
+      .trim()
+      .toLowerCase();
+
+  /*
+   * Mostra i dati del mezzo nel pannello della corsa.
+   */
+  document.getElementById(
+    "mezzoCorsaLabel"
+  ).textContent =
+    `${prenotazioneCorrente?.tipo || "Mezzo"} ` +
+    `${prenotazioneCorrente?.modello || ""}` +
+    ` · ${prenotazioneCorrente?.id_mezzo || ""}`;
+
+  document.getElementById(
+    "tariffaCorsaLabel"
+  ).textContent =
+    "€" +
+    Number(
+      prenotazioneCorrente
+        ?.tariffa_minuto ||
+      0
+    ).toFixed(2) +
+    "/min";
+
+  aggiornaInterfacciaCorsa();
+
+  /*
+   * Se la pagina viene ricaricata mentre la corsa è in pausa,
+   * il timer riparte dal momento salvato nel database.
+   */
+  if (
+    statoCorsaCorrente ===
+      "in_pausa" &&
+    prenotazioneCorrente
+      ?.data_ora_inizio_pausa
+  ) {
+    avviaTimerPausa(
+      prenotazioneCorrente
+        .data_ora_inizio_pausa
+    );
+  } else {
+    document.getElementById(
+      "pauseTimerBox"
+    ).classList.remove(
+      "active"
+    );
+  }
+
+  /*
+   * Se esiste una pausa precedente, ripristina anche
+   * il conto alla rovescia dei 15 minuti.
+   */
+  if (
+    statoCorsaCorrente ===
+      "in_corso" &&
+    prenotazioneCorrente
+      ?.data_ora_fine_ultima_pausa
+  ) {
+    avviaTimerCooldown(
+      prenotazioneCorrente
+        .data_ora_fine_ultima_pausa
+    );
+  } else {
+    document.getElementById(
+      "pauseCooldownBox"
+    ).classList.remove(
+      "active"
+    );
+  }
+}
 
     async function qrLettoCorrettamente(
       testoDecodificato
@@ -1562,7 +1923,747 @@
     function erroreLetturaQr() {
       // Gli errori durante l'inquadratura sono normali.
     }
+    // =====================================================
+// GESTIONE DELLA PAUSA
+// =====================================================
 
+function formattaTempo(secondiTotali) {
+  const secondiValidi =
+    Math.max(
+      0,
+      Math.floor(
+        Number(secondiTotali) || 0
+      )
+    );
+
+  const minuti =
+    Math.floor(
+      secondiValidi / 60
+    );
+
+  const secondi =
+    secondiValidi % 60;
+
+  return (
+    String(minuti).padStart(2, "0") +
+    ":" +
+    String(secondi).padStart(2, "0")
+  );
+}
+
+function aggiornaPausaTotale() {
+  const secondiTotali =
+    Number(
+      prenotazioneCorrente
+        ?.secondi_pausa_totali || 0
+    );
+
+  const minuti =
+    Math.floor(
+      secondiTotali / 60
+    );
+
+  const secondi =
+    secondiTotali % 60;
+
+  document.getElementById(
+    "pausaTotaleLabel"
+  ).textContent =
+    minuti > 0
+      ? `${minuti} min ${secondi} sec`
+      : `${secondi} secondi`;
+}
+
+function aggiornaInterfacciaCorsa() {
+  const badge =
+    document.getElementById(
+      "statoCorsaBadge"
+    );
+
+  const pulsante =
+    document.getElementById(
+      "pausaRiprendiBtn"
+    );
+
+  if (
+    statoCorsaCorrente ===
+    "in_pausa"
+  ) {
+    badge.textContent =
+      "In pausa";
+
+    badge.classList.add(
+      "paused"
+    );
+
+    pulsante.textContent =
+      "▶ Riavvia mezzo";
+
+    pulsante.classList.remove(
+      "btn-pause"
+    );
+
+    pulsante.classList.add(
+      "btn-resume"
+    );
+
+    document.getElementById(
+      "titoloCorsa"
+    ).textContent =
+      "Corsa in pausa";
+
+    document.getElementById(
+      "testoSuccesso"
+    ).textContent =
+      "La tariffa è temporaneamente sospesa.";
+  } else {
+    badge.textContent =
+      "In corso";
+
+    badge.classList.remove(
+      "paused"
+    );
+
+    pulsante.textContent =
+      "⏸ Metti in pausa";
+
+    pulsante.classList.remove(
+      "btn-resume"
+    );
+
+    pulsante.classList.add(
+      "btn-pause"
+    );
+
+    document.getElementById(
+      "titoloCorsa"
+    ).textContent =
+      "Corsa in corso";
+
+    document.getElementById(
+      "testoSuccesso"
+    ).textContent =
+      "Il mezzo è attivo. Puoi continuare la corsa.";
+  }
+
+  aggiornaPausaTotale();
+}
+
+function fermaTimerPausa() {
+  if (intervalloPausa) {
+    clearInterval(
+      intervalloPausa
+    );
+
+    intervalloPausa = null;
+  }
+}
+
+function fermaTimerCooldown() {
+  if (
+    intervalloCooldownPausa
+  ) {
+    clearInterval(
+      intervalloCooldownPausa
+    );
+
+    intervalloCooldownPausa =
+      null;
+  }
+}
+
+function avviaTimerPausa(
+  dataInizioPausa
+) {
+  fermaTimerPausa();
+
+  const timerBox =
+    document.getElementById(
+      "pauseTimerBox"
+    );
+
+  const timerValue =
+    document.getElementById(
+      "pauseTimerValue"
+    );
+
+  timerBox.classList.add(
+    "active"
+  );
+
+  const aggiornaTimer =
+    async () => {
+      const inizio =
+        new Date(
+          dataInizioPausa
+        ).getTime();
+
+      const trascorsi =
+        Math.floor(
+          (
+            Date.now() -
+            inizio
+          ) / 1000
+        );
+
+      const rimanenti =
+        Math.max(
+          DURATA_MASSIMA_PAUSA_SECONDI -
+          trascorsi,
+          0
+        );
+
+      timerValue.textContent =
+        formattaTempo(
+          rimanenti
+        );
+
+      if (rimanenti <= 0) {
+        fermaTimerPausa();
+
+        /*
+         * Alla scadenza dei 5 minuti
+         * la corsa viene ripresa automaticamente.
+         */
+        await riprendiCorsa(
+          true
+        );
+      }
+    };
+
+  aggiornaTimer();
+
+  intervalloPausa =
+    setInterval(
+      aggiornaTimer,
+      1000
+    );
+}
+
+function avviaTimerCooldown(
+  dataFineUltimaPausa
+) {
+  fermaTimerCooldown();
+
+  const cooldownBox =
+    document.getElementById(
+      "pauseCooldownBox"
+    );
+
+  const cooldownValue =
+    document.getElementById(
+      "pauseCooldownValue"
+    );
+
+  const pulsante =
+    document.getElementById(
+      "pausaRiprendiBtn"
+    );
+
+  const aggiornaCooldown =
+    () => {
+      const finePausa =
+        new Date(
+          dataFineUltimaPausa
+        ).getTime();
+
+      const trascorsi =
+        Math.floor(
+          (
+            Date.now() -
+            finePausa
+          ) / 1000
+        );
+
+      const rimanenti =
+        Math.max(
+          ATTESA_NUOVA_PAUSA_SECONDI -
+          trascorsi,
+          0
+        );
+
+      if (
+        statoCorsaCorrente ===
+        "in_corso"
+      ) {
+        pulsante.disabled =
+          rimanenti > 0;
+      }
+
+      cooldownValue.textContent =
+        formattaTempo(
+          rimanenti
+        );
+
+      if (rimanenti > 0) {
+        cooldownBox.classList.add(
+          "active"
+        );
+      } else {
+        cooldownBox.classList.remove(
+          "active"
+        );
+
+        pulsante.disabled =
+          false;
+
+        fermaTimerCooldown();
+      }
+    };
+
+  aggiornaCooldown();
+
+  intervalloCooldownPausa =
+    setInterval(
+      aggiornaCooldown,
+      1000
+    );
+}
+
+async function mettiInPausa() {
+  const pulsante =
+    document.getElementById(
+      "pausaRiprendiBtn"
+    );
+
+  pulsante.disabled = true;
+
+  mostraMessaggio(
+    "Messa in pausa della corsa...",
+    "info"
+  );
+
+  try {
+    const response =
+      await fetch(
+        `/api/prenotazioni/${idPrenotazioneCorrente}/pausa`,
+        {
+          method: "PUT",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            "Accept":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            id_utente:
+              idUtenteCorrente
+          })
+        }
+      );
+
+    const result =
+      await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result.error ||
+        "Non è stato possibile mettere in pausa la corsa"
+      );
+    }
+
+    statoCorsaCorrente =
+      "in_pausa";
+
+    prenotazioneCorrente
+      .stato_corsa =
+      "in_pausa";
+
+    prenotazioneCorrente
+      .data_ora_inizio_pausa =
+      new Date().toISOString();
+
+    aggiornaInterfacciaCorsa();
+
+    avviaTimerPausa(
+      prenotazioneCorrente
+        .data_ora_inizio_pausa
+    );
+
+    mostraMessaggio(
+      "Corsa in pausa. La tariffa è sospesa per un massimo di 5 minuti.",
+      "success"
+    );
+
+    pulsante.disabled =
+      false;
+  } catch (error) {
+    console.error(
+      "Errore pausa:",
+      error
+    );
+
+    mostraMessaggio(
+      error.message,
+      "error"
+    );
+
+    pulsante.disabled =
+      false;
+  }
+}
+
+async function riprendiCorsa(
+  automatica = false
+) {
+  const pulsante =
+    document.getElementById(
+      "pausaRiprendiBtn"
+    );
+
+  pulsante.disabled = true;
+
+  mostraMessaggio(
+    automatica
+      ? "Pausa terminata. Riavvio automatico del mezzo..."
+      : "Riavvio del mezzo in corso...",
+    "info"
+  );
+
+  try {
+    const response =
+      await fetch(
+        `/api/prenotazioni/${idPrenotazioneCorrente}/riprendi`,
+        {
+          method: "PUT",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            "Accept":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            id_utente:
+              idUtenteCorrente
+          })
+        }
+      );
+
+    const result =
+      await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result.error ||
+        "Non è stato possibile riprendere la corsa"
+      );
+    }
+
+    fermaTimerPausa();
+
+    document.getElementById(
+      "pauseTimerBox"
+    ).classList.remove(
+      "active"
+    );
+
+    statoCorsaCorrente =
+      "in_corso";
+
+    prenotazioneCorrente
+      .stato_corsa =
+      "in_corso";
+
+    const pausaRegistrata =
+      Number(
+        result
+          .secondi_pausa_registrati ||
+        0
+      );
+
+    prenotazioneCorrente
+      .secondi_pausa_totali =
+      Number(
+        prenotazioneCorrente
+          .secondi_pausa_totali ||
+        0
+      ) +
+      pausaRegistrata;
+
+    prenotazioneCorrente
+      .data_ora_inizio_pausa =
+      null;
+
+    prenotazioneCorrente
+      .data_ora_fine_ultima_pausa =
+      new Date().toISOString();
+
+    aggiornaInterfacciaCorsa();
+
+    avviaTimerCooldown(
+      prenotazioneCorrente
+        .data_ora_fine_ultima_pausa
+    );
+
+    mostraMessaggio(
+      automatica
+        ? "I 5 minuti di pausa sono terminati. La corsa è ripartita automaticamente."
+        : "Mezzo riavviato. La tariffa è nuovamente attiva.",
+      "success"
+    );
+  } catch (error) {
+    console.error(
+      "Errore ripresa:",
+      error
+    );
+
+    mostraMessaggio(
+      error.message,
+      "error"
+    );
+
+    /*
+     * Se il riavvio automatico fallisce,
+     * il pulsante resta disponibile per riprovare.
+     */
+    pulsante.disabled =
+      false;
+  }
+}
+
+async function gestisciPausaRipresa() {
+  if (
+    statoCorsaCorrente ===
+    "in_pausa"
+  ) {
+    await riprendiCorsa(
+      false
+    );
+  } else {
+    await mettiInPausa();
+  }
+}
+// =====================================================
+// TERMINE DELLA CORSA
+// =====================================================
+
+async function terminaCorsa() {
+  if (
+    !prenotazioneCorrente ||
+    !idPrenotazioneCorrente
+  ) {
+    mostraMessaggio(
+      "Nessuna corsa valida da terminare.",
+      "error"
+    );
+
+    return;
+  }
+
+  const conferma =
+    window.confirm(
+      "Vuoi terminare definitivamente la corsa?\n\n" +
+      "Il costo verrà addebitato sul portafoglio e il mezzo tornerà disponibile."
+    );
+
+  if (!conferma) {
+    return;
+  }
+
+  const pulsanteTermina =
+    document.getElementById(
+      "terminaCorsaBtn"
+    );
+
+  const pulsantePausa =
+    document.getElementById(
+      "pausaRiprendiBtn"
+    );
+
+  pulsanteTermina.disabled = true;
+  pulsantePausa.disabled = true;
+
+  pulsanteTermina.textContent =
+    "Conclusione in corso...";
+
+  mostraMessaggio(
+    "Calcolo della durata e del costo della corsa...",
+    "info"
+  );
+
+  try {
+    /*
+     * La rotta termina può essere chiamata anche mentre
+     * la corsa è in pausa. Il server sottrae automaticamente
+     * la pausa attiva dal tempo tariffato.
+     */
+    const response =
+      await fetch(
+        `/api/prenotazioni/${idPrenotazioneCorrente}/termina`,
+        {
+          method: "PUT",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            "Accept":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            id_utente:
+              idUtenteCorrente
+          })
+        }
+      );
+
+    /*
+     * Legge prima la risposta come testo per evitare
+     * errori nel caso Railway restituisca HTML.
+     */
+    const testoRisposta =
+      await response.text();
+
+    let result = {};
+
+    try {
+      result =
+        testoRisposta
+          ? JSON.parse(testoRisposta)
+          : {};
+    } catch (parseError) {
+      console.error(
+        "Risposta non JSON del server:",
+        testoRisposta
+      );
+
+      throw new Error(
+        "Il server ha restituito una risposta non valida. " +
+        "Controlla che l'ultima versione del server sia pubblicata su Railway."
+      );
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        result.error ||
+        result.dettaglio ||
+        "Non è stato possibile terminare la corsa"
+      );
+    }
+
+    // Ferma tutti i timer locali.
+    fermaTimerPausa();
+    fermaTimerCooldown();
+
+    document.getElementById(
+      "pauseTimerBox"
+    ).classList.remove(
+      "active"
+    );
+
+    document.getElementById(
+      "pauseCooldownBox"
+    ).classList.remove(
+      "active"
+    );
+
+    // Aggiorna lo stato locale.
+    prenotazioneCorrente
+      .stato_prenotazione =
+      "completata";
+
+    prenotazioneCorrente
+      .stato_corsa =
+      "terminata";
+
+    statoCorsaCorrente =
+      "terminata";
+
+    const durataMinuti =
+      Number(
+        result.durata_minuti || 0
+      );
+
+    const costoTotale =
+      Number(
+        result.costo_totale || 0
+      );
+
+    const saldoAggiornato =
+      Number(
+        result.saldo_aggiornato || 0
+      );
+
+    document.getElementById(
+      "titoloCorsa"
+    ).textContent =
+      "Corsa terminata";
+
+    document.getElementById(
+      "testoSuccesso"
+    ).innerHTML = `
+      La corsa è stata conclusa correttamente.<br><br>
+
+      Durata tariffata:
+      <strong>${durataMinuti} minuti</strong><br>
+
+      Costo totale:
+      <strong>€${costoTotale.toFixed(2)}</strong><br>
+
+      Saldo disponibile:
+      <strong>€${saldoAggiornato.toFixed(2)}</strong>
+    `;
+
+    const badge =
+      document.getElementById(
+        "statoCorsaBadge"
+      );
+
+    badge.textContent =
+      "Terminata";
+
+    badge.classList.remove(
+      "paused"
+    );
+
+    document.getElementById(
+      "pausaRiprendiBtn"
+    ).style.display =
+      "none";
+
+    pulsanteTermina.textContent =
+      "Corsa terminata";
+
+    mostraMessaggio(
+      "Corsa terminata correttamente. Il mezzo è nuovamente disponibile.",
+      "success"
+    );
+
+    /*
+     * Dopo alcuni secondi torna automaticamente alla Home.
+     */
+    setTimeout(() => {
+      window.location.href =
+        "home.html";
+    }, 5000);
+  } catch (error) {
+    console.error(
+      "Errore termine corsa:",
+      error
+    );
+
+    mostraMessaggio(
+      error.message,
+      "error"
+    );
+
+    pulsanteTermina.disabled =
+      false;
+
+    pulsantePausa.disabled =
+      false;
+
+    pulsanteTermina.textContent =
+      "■ Termina corsa";
+  }
+}
     // =====================================================
     // FOTOCAMERA
     // =====================================================
@@ -2152,6 +3253,18 @@ async function cancellaPrenotazione() {
       "Cancella prenotazione";
   }
 }
+document.getElementById(
+  "pausaRiprendiBtn"
+).addEventListener(
+  "click",
+  gestisciPausaRipresa
+);
+document.getElementById(
+  "terminaCorsaBtn"
+).addEventListener(
+  "click",
+  terminaCorsa
+);
     // =====================================================
     // EVENTI
     // =====================================================
@@ -2205,18 +3318,25 @@ async function cancellaPrenotazione() {
     );
 
     window.addEventListener(
-      "pagehide",
-      () => {
-        if (
-          lettoreQr &&
-          fotocameraAttiva
-        ) {
-          lettoreQr
-            .stop()
-            .catch(() => {});
-        }
-      }
-    );
+  "pagehide",
+  () => {
+    /*
+     * Ferma i timer JavaScript locali.
+     * Lo stato effettivo della corsa resta salvato nel database.
+     */
+    fermaTimerPausa();
+    fermaTimerCooldown();
+
+    if (
+      lettoreQr &&
+      fotocameraAttiva
+    ) {
+      lettoreQr
+        .stop()
+        .catch(() => {});
+    }
+  }
+);
 
     window.addEventListener(
       "load",
