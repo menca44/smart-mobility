@@ -10,7 +10,7 @@
 
   <title>MoveLanDs - Sblocco mezzo</title>
 
-  <!-- Libreria utilizzata per leggere realmente i codici QR. -->
+  <!-- Libreria per la scansione reale dei codici QR tramite fotocamera. -->
   <script
     src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"
     defer
@@ -27,6 +27,7 @@
       --verde-chiaro: #e7f7ef;
       --blu: #064663;
       --rosso: #c93434;
+      --rosso-scuro: #a91f1f;
       --rosso-chiaro: #fff1f1;
       --giallo-chiaro: #fff8df;
       --testo: #12372a;
@@ -560,6 +561,10 @@
       border: 1px solid #f1c7c7;
     }
 
+    .btn-danger:hover {
+      background: #fce2e2;
+    }
+
     .btn:disabled {
       cursor: not-allowed;
       opacity: 0.55;
@@ -609,6 +614,48 @@
     .manual-row .btn {
       width: auto;
       min-width: 120px;
+    }
+
+    .cancel-booking-area {
+      margin-top: 24px;
+      padding: 19px;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+
+      border-radius: 18px;
+      background: #fff7f7;
+      border: 1px solid #f0cccc;
+    }
+
+    .cancel-booking-content h3 {
+      margin: 0 0 6px;
+      color: #991b1b;
+      font-size: 17px;
+    }
+
+    .cancel-booking-content p {
+      margin: 0;
+      color: #7f1d1d;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .btn-cancel-booking {
+      width: auto;
+      min-width: 190px;
+      flex-shrink: 0;
+
+      background: #ffffff;
+      color: var(--rosso);
+      border: 1px solid #e5a8a8;
+    }
+
+    .btn-cancel-booking:hover {
+      background: var(--rosso);
+      color: #ffffff;
     }
 
     .message {
@@ -713,6 +760,7 @@
           max(13px, env(safe-area-inset-top))
           18px
           13px;
+
         align-items: center;
         gap: 12px;
       }
@@ -757,6 +805,16 @@
 
       .manual-row .btn {
         width: 100%;
+      }
+
+      .cancel-booking-area {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .btn-cancel-booking {
+        width: 100%;
+        min-width: 0;
       }
 
       #qr-reader,
@@ -811,7 +869,7 @@
 
       <p>
         Controlla che il mezzo mostrato corrisponda a quello
-        prenotato, autorizza Safari ad accedere alla fotocamera
+        prenotato, autorizza il browser ad accedere alla fotocamera
         e inquadra il QR code applicato sul veicolo.
       </p>
     </section>
@@ -865,7 +923,7 @@
 
               <p>
                 Premi “Avvia fotocamera”, consenti l’accesso
-                a Safari e inquadra il codice QR.
+                e inquadra il codice QR del mezzo.
               </p>
             </div>
 
@@ -875,7 +933,10 @@
             ></div>
           </div>
 
-          <div id="cameraDetails" class="camera-details"></div>
+          <div
+            id="cameraDetails"
+            class="camera-details"
+          ></div>
 
           <div class="actions">
             <button
@@ -921,9 +982,35 @@
               </button>
             </div>
           </div>
+
+          <div
+            id="cancelBookingArea"
+            class="cancel-booking-area"
+          >
+            <div class="cancel-booking-content">
+              <h3>Cancella prenotazione</h3>
+
+              <p>
+                Puoi cancellare la prenotazione finché il mezzo
+                non è stato sbloccato. Il mezzo tornerà subito
+                disponibile agli altri utenti.
+              </p>
+            </div>
+
+            <button
+              id="cancellaPrenotazioneBtn"
+              class="btn btn-cancel-booking"
+              type="button"
+            >
+              Cancella prenotazione
+            </button>
+          </div>
         </div>
 
-        <div id="pannelloSuccesso" class="success-panel">
+        <div
+          id="pannelloSuccesso"
+          class="success-panel"
+        >
           <div class="success-icon">
             ✓
           </div>
@@ -998,7 +1085,7 @@
     }
 
     // =====================================================
-    // LOGIN E PRENOTAZIONE
+    // LOGIN
     // =====================================================
 
     function controllaLogin() {
@@ -1045,6 +1132,10 @@
 
       return true;
     }
+
+    // =====================================================
+    // RECUPERO DELLA PRENOTAZIONE
+    // =====================================================
 
     function recuperaIdPrenotazioneDaUrl() {
       const parametri =
@@ -1186,10 +1277,22 @@
             </div>
 
             <div class="vehicle-row">
-              <span>Stato</span>
+              <span>Stato prenotazione</span>
 
               <strong>
                 ${prenotazione.stato_prenotazione}
+              </strong>
+            </div>
+
+            <div class="vehicle-row">
+              <span>Stato mezzo</span>
+
+              <strong>
+                ${
+                  statoSblocco === "sbloccato"
+                    ? "Sbloccato"
+                    : "Bloccato"
+                }
               </strong>
             </div>
           </div>
@@ -1213,6 +1316,16 @@
       if (
         statoSblocco === "sbloccato"
       ) {
+        const areaCancellazione =
+          document.getElementById(
+            "cancelBookingArea"
+          );
+
+        if (areaCancellazione) {
+          areaCancellazione.style.display =
+            "none";
+        }
+
         mostraPannelloSuccesso();
       }
     }
@@ -1312,6 +1425,10 @@
         document.getElementById(
           "sbloccaManualeBtn"
         ).disabled = true;
+
+        document.getElementById(
+          "cancellaPrenotazioneBtn"
+        ).disabled = true;
       }
     }
 
@@ -1379,6 +1496,9 @@
           );
         }
 
+        prenotazioneCorrente.stato_sblocco =
+          "sbloccato";
+
         await fermaFotocamera();
 
         mostraPannelloSuccesso(
@@ -1440,12 +1560,11 @@
     }
 
     function erroreLetturaQr() {
-      // Gli errori mentre il QR non è ancora centrato
-      // sono normali e non vengono mostrati.
+      // Gli errori durante l'inquadratura sono normali.
     }
 
     // =====================================================
-    // GESTIONE FOTOCAMERA, COMPATIBILE CON IPHONE
+    // FOTOCAMERA
     // =====================================================
 
     function descriviErroreFotocamera(error) {
@@ -1469,9 +1588,8 @@
         erroreMinuscolo.includes("notallowed")
       ) {
         return (
-          "Safari non ha il permesso di usare la fotocamera. " +
-          "Premi l’icona a sinistra dell’indirizzo, apri Impostazioni sito web " +
-          "e imposta Fotocamera su Consenti."
+          "Il browser non ha il permesso di usare la fotocamera. " +
+          "Apri le impostazioni del sito e imposta Fotocamera su Consenti."
         );
       }
 
@@ -1493,7 +1611,7 @@
       ) {
         return (
           "La fotocamera potrebbe essere utilizzata da un’altra applicazione. " +
-          "Chiudi Fotocamera, FaceTime, WhatsApp e le altre app che possono usare la videocamera."
+          "Chiudi le altre applicazioni che possono usare la fotocamera."
         );
       }
 
@@ -1518,11 +1636,13 @@
       }
 
       if (
-        erroreMinuscolo.includes("camera streaming not supported")
+        erroreMinuscolo.includes(
+          "camera streaming not supported"
+        )
       ) {
         return (
           "La fotocamera non è disponibile in questa modalità. " +
-          "Apri il sito direttamente in Safari, non da WhatsApp e non dall’icona aggiunta alla schermata Home."
+          "Apri il sito direttamente nel browser."
         );
       }
 
@@ -1535,27 +1655,19 @@
     async function richiediPermessoFotocamera() {
       let streamTemporaneo = null;
 
-      try {
-        /*
-          Su iPhone questa chiamata diretta permette a Safari
-          di mostrare subito la richiesta di autorizzazione.
-        */
-        streamTemporaneo =
-          await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: false
-          });
+      streamTemporaneo =
+        await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false
+        });
 
-        streamTemporaneo
-          .getTracks()
-          .forEach((traccia) => {
-            traccia.stop();
-          });
+      streamTemporaneo
+        .getTracks()
+        .forEach((traccia) => {
+          traccia.stop();
+        });
 
-        return true;
-      } catch (error) {
-        throw error;
-      }
+      return true;
     }
 
     function selezionaFotocameraPosteriore(
@@ -1593,10 +1705,6 @@
         return fotocameraPosteriore;
       }
 
-      /*
-        Su molti iPhone le camere posteriori si trovano
-        nelle ultime posizioni dell'elenco.
-      */
       return fotocamere[
         fotocamere.length - 1
       ];
@@ -1629,7 +1737,7 @@
         !navigator.mediaDevices.getUserMedia
       ) {
         mostraMessaggio(
-          "Questo browser non permette l'accesso alla fotocamera. Apri il sito direttamente in Safari.",
+          "Questo browser non permette l'accesso alla fotocamera.",
           "error"
         );
 
@@ -1670,16 +1778,8 @@
           "info"
         );
 
-        /*
-          Prima chiediamo il permesso direttamente a Safari.
-          Questo passaggio migliora l'affidabilità su iPhone.
-        */
         await richiediPermessoFotocamera();
 
-        /*
-          Dopo il consenso possiamo recuperare i nomi
-          e gli identificativi reali delle fotocamere.
-        */
         const fotocamere =
           await Html5Qrcode.getCameras();
 
@@ -1723,10 +1823,6 @@
         reader.style.display =
           "block";
 
-        /*
-          Pulisco il contenitore nel caso in cui
-          ci sia stato un precedente tentativo.
-        */
         reader.innerHTML = "";
 
         lettoreQr =
@@ -1769,16 +1865,9 @@
             };
           },
 
-          /*
-            Non imponiamo aspectRatio perché su alcuni
-            modelli di iPhone può bloccare la camera.
-          */
           disableFlip: false
         };
 
-        /*
-          Avvio tramite deviceId reale della fotocamera.
-        */
         await lettoreQr.start(
           fotocameraScelta.id,
           configurazioneScanner,
@@ -1915,6 +2004,124 @@
     }
 
     // =====================================================
+    // CANCELLAZIONE DELLA PRENOTAZIONE
+    // =====================================================
+
+    async function cancellaPrenotazione() {
+      if (
+        !prenotazioneCorrente ||
+        !idPrenotazioneCorrente
+      ) {
+        mostraMessaggio(
+          "Nessuna prenotazione valida da cancellare.",
+          "error"
+        );
+
+        return;
+      }
+
+      const statoSblocco =
+        String(
+          prenotazioneCorrente.stato_sblocco ||
+          "bloccato"
+        )
+          .trim()
+          .toLowerCase();
+
+      if (statoSblocco === "sbloccato") {
+        mostraMessaggio(
+          "Il mezzo è già stato sbloccato. Devi terminare la corsa invece di cancellare la prenotazione.",
+          "error"
+        );
+
+        return;
+      }
+
+      const conferma =
+        window.confirm(
+          "Vuoi davvero cancellare la prenotazione?\n\n" +
+          "Il mezzo tornerà immediatamente disponibile."
+        );
+
+      if (!conferma) {
+        return;
+      }
+
+      const pulsante =
+        document.getElementById(
+          "cancellaPrenotazioneBtn"
+        );
+
+      pulsante.disabled = true;
+      pulsante.textContent =
+        "Cancellazione in corso...";
+
+      mostraMessaggio(
+        "Cancellazione della prenotazione in corso...",
+        "info"
+      );
+
+      try {
+        await fermaFotocamera();
+
+        const response = await fetch(
+          `/api/prenotazioni/${idPrenotazioneCorrente}/annulla`,
+          {
+            method: "PUT",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body: JSON.stringify({
+              id_utente:
+                idUtenteCorrente
+            })
+          }
+        );
+
+        const result =
+          await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            result.error ||
+            "Non è stato possibile cancellare la prenotazione"
+          );
+        }
+
+        mostraMessaggio(
+          "Prenotazione cancellata. Il mezzo è nuovamente disponibile.",
+          "success"
+        );
+
+        document.getElementById(
+          "areaSblocco"
+        ).style.display = "none";
+
+        setTimeout(() => {
+          window.location.href =
+            "home.html";
+        }, 1600);
+      } catch (error) {
+        console.error(
+          "Errore cancellazione prenotazione:",
+          error
+        );
+
+        mostraMessaggio(
+          error.message,
+          "error"
+        );
+
+        pulsante.disabled = false;
+        pulsante.textContent =
+          "Cancella prenotazione";
+      }
+    }
+
+    // =====================================================
     // EVENTI
     // =====================================================
 
@@ -1957,6 +2164,13 @@
           );
         }
       }
+    );
+
+    document.getElementById(
+      "cancellaPrenotazioneBtn"
+    ).addEventListener(
+      "click",
+      cancellaPrenotazione
     );
 
     window.addEventListener(
