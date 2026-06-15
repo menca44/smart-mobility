@@ -5,15 +5,12 @@
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   >
 
   <title>MoveLanDs - Sblocco mezzo</title>
 
-  <!--
-    Libreria che permette di usare realmente la fotocamera
-    per leggere il codice QR.
-  -->
+  <!-- Libreria utilizzata per leggere realmente i codici QR. -->
   <script
     src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"
     defer
@@ -39,6 +36,10 @@
       --ombra: 0 22px 55px rgba(17, 45, 35, 0.14);
     }
 
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       margin: 0;
       min-height: 100vh;
@@ -48,7 +49,7 @@
       background:
         radial-gradient(
           circle at 10% 15%,
-          rgba(7, 150, 105, 0.20),
+          rgba(7, 150, 105, 0.2),
           transparent 30%
         ),
         radial-gradient(
@@ -65,7 +66,8 @@
     }
 
     button,
-    input {
+    input,
+    select {
       font-family: inherit;
     }
 
@@ -76,12 +78,17 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 20px;
 
       background: rgba(255, 255, 255, 0.94);
       backdrop-filter: blur(14px);
 
       border-bottom: 1px solid rgba(220, 232, 226, 0.9);
       box-shadow: 0 8px 24px rgba(17, 45, 35, 0.05);
+
+      position: sticky;
+      top: 0;
+      z-index: 1000;
     }
 
     .brand {
@@ -139,6 +146,7 @@
 
       border: 1px solid rgba(7, 150, 105, 0.18);
       transition: 0.2s;
+      white-space: nowrap;
     }
 
     .home-link:hover {
@@ -258,7 +266,12 @@
       padding: 22px;
       border-radius: 22px;
 
-      background: linear-gradient(135deg, #effaf5, #f7fcfa);
+      background: linear-gradient(
+        135deg,
+        #effaf5,
+        #f7fcfa
+      );
+
       border: 1px solid var(--bordo);
     }
 
@@ -275,7 +288,6 @@
 
       display: grid;
       place-items: center;
-
       flex-shrink: 0;
 
       border-radius: 22px;
@@ -349,6 +361,7 @@
       padding: 28px;
       text-align: center;
       color: var(--grigio);
+      line-height: 1.5;
     }
 
     .loading-icon {
@@ -376,7 +389,6 @@
 
       display: grid;
       place-items: center;
-
       flex-shrink: 0;
 
       border-radius: 15px;
@@ -397,12 +409,9 @@
       line-height: 1.5;
     }
 
-    /*
-      Contenitore nel quale html5-qrcode
-      inserisce automaticamente il video della fotocamera.
-    */
     .reader-wrapper {
       width: 100%;
+      min-height: 360px;
       overflow: hidden;
 
       border-radius: 24px;
@@ -415,14 +424,14 @@
       min-height: 360px;
       background: #101815;
       color: white;
+      overflow: hidden;
     }
 
-    /*
-      Personalizzazione degli elementi generati
-      automaticamente dalla libreria.
-    */
     #qr-reader video {
       width: 100% !important;
+      height: auto !important;
+      min-height: 340px;
+      max-height: 520px;
       border-radius: 20px;
       object-fit: cover;
     }
@@ -458,10 +467,6 @@
       color: #9ff4cf;
     }
 
-    #qr-reader__dashboard_section_csr span {
-      color: white;
-    }
-
     .scanner-placeholder {
       min-height: 360px;
       padding: 35px;
@@ -487,6 +492,25 @@
       color: #d8e3de;
       line-height: 1.5;
       font-size: 14px;
+    }
+
+    .camera-details {
+      display: none;
+      margin-top: 14px;
+      padding: 13px;
+
+      border-radius: 14px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+
+      color: #475569;
+      font-size: 12px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .camera-details.show {
+      display: block;
     }
 
     .actions {
@@ -611,6 +635,13 @@
       border: 1px solid #f2c2c2;
     }
 
+    .message.info {
+      display: block;
+      background: #eff6ff;
+      color: #1d4f91;
+      border: 1px solid #bfdbfe;
+    }
+
     .success-panel {
       display: none;
       padding: 34px 26px;
@@ -678,18 +709,21 @@
     @media (max-width: 560px) {
       .navbar {
         min-height: 90px;
-        padding: 13px 18px;
+        padding:
+          max(13px, env(safe-area-inset-top))
+          18px
+          13px;
         align-items: center;
         gap: 12px;
       }
 
       .brand-logo {
-        width: 59px;
-        height: 59px;
+        width: 58px;
+        height: 58px;
       }
 
       .brand-title {
-        font-size: 23px;
+        font-size: 22px;
       }
 
       .brand-subtitle {
@@ -726,7 +760,12 @@
       }
 
       #qr-reader,
-      .scanner-placeholder {
+      .scanner-placeholder,
+      .reader-wrapper {
+        min-height: 300px;
+      }
+
+      #qr-reader video {
         min-height: 300px;
       }
     }
@@ -772,8 +811,8 @@
 
       <p>
         Controlla che il mezzo mostrato corrisponda a quello
-        prenotato, autorizza l’accesso alla fotocamera e inquadra
-        il QR code applicato sul veicolo.
+        prenotato, autorizza Safari ad accedere alla fotocamera
+        e inquadra il QR code applicato sul veicolo.
       </p>
     </section>
 
@@ -807,7 +846,8 @@
 
             <p>
               Il codice letto dalla fotocamera viene confrontato
-              con quello associato al mezzo prenotato.
+              con quello registrato nel database per il mezzo
+              prenotato.
             </p>
           </div>
         </div>
@@ -817,10 +857,6 @@
         <div id="areaSblocco">
 
           <div class="reader-wrapper">
-
-            <!--
-              Prima dell'avvio viene mostrato questo messaggio.
-            -->
             <div
               id="scannerPlaceholder"
               class="scanner-placeholder"
@@ -829,19 +865,17 @@
 
               <p>
                 Premi “Avvia fotocamera”, consenti l’accesso
-                alla videocamera e inquadra il codice QR.
+                a Safari e inquadra il codice QR.
               </p>
             </div>
 
-            <!--
-              La libreria inserirà qui il video reale
-              proveniente dalla fotocamera.
-            -->
             <div
               id="qr-reader"
               style="display: none;"
             ></div>
           </div>
+
+          <div id="cameraDetails" class="camera-details"></div>
 
           <div class="actions">
             <button
@@ -867,7 +901,7 @@
 
             <p>
               Usa questa opzione nel caso in cui la fotocamera
-              non sia disponibile oppure il QR non venga letto.
+              non sia disponibile oppure il QR code non venga letto.
             </p>
 
             <div class="manual-row">
@@ -913,22 +947,23 @@
   </main>
 
   <script>
-    // Informazioni dell'utente autenticato.
+    // =====================================================
+    // VARIABILI GENERALI
+    // =====================================================
+
     let utenteCorrente = null;
     let idUtenteCorrente = null;
 
-    // Informazioni della prenotazione.
     let prenotazioneCorrente = null;
     let idPrenotazioneCorrente = null;
 
-    // Oggetto che gestisce la fotocamera.
     let lettoreQr = null;
-
-    // Indica se la fotocamera è attualmente attiva.
     let fotocameraAttiva = false;
-
-    // Impedisce che lo stesso QR venga elaborato più volte.
     let scansioneInElaborazione = false;
+
+    // =====================================================
+    // MESSAGGI DELLA PAGINA
+    // =====================================================
 
     function mostraMessaggio(testo, tipo) {
       const elemento =
@@ -945,6 +980,26 @@
       elemento.textContent = "";
       elemento.className = "message";
     }
+
+    function mostraDettagliFotocamera(testo) {
+      const elemento =
+        document.getElementById("cameraDetails");
+
+      elemento.textContent = testo;
+      elemento.classList.add("show");
+    }
+
+    function nascondiDettagliFotocamera() {
+      const elemento =
+        document.getElementById("cameraDetails");
+
+      elemento.textContent = "";
+      elemento.classList.remove("show");
+    }
+
+    // =====================================================
+    // LOGIN E PRENOTAZIONE
+    // =====================================================
 
     function controllaLogin() {
       const utenteSalvato =
@@ -1093,6 +1148,7 @@
           <div class="vehicle-info">
             <div class="vehicle-row">
               <span>Numero mezzo</span>
+
               <strong>
                 #${prenotazione.id_mezzo}
               </strong>
@@ -1100,6 +1156,7 @@
 
             <div class="vehicle-row">
               <span>Zona</span>
+
               <strong>
                 ${prenotazione.area || "Non indicata"}
               </strong>
@@ -1107,6 +1164,7 @@
 
             <div class="vehicle-row">
               <span>Batteria</span>
+
               <strong>
                 ${
                   prenotazione.batteria !== null &&
@@ -1119,6 +1177,7 @@
 
             <div class="vehicle-row">
               <span>Tariffa</span>
+
               <strong>
                 €${Number(
                   prenotazione.tariffa_minuto || 0
@@ -1128,6 +1187,7 @@
 
             <div class="vehicle-row">
               <span>Stato</span>
+
               <strong>
                 ${prenotazione.stato_prenotazione}
               </strong>
@@ -1255,6 +1315,10 @@
       }
     }
 
+    // =====================================================
+    // SBLOCCO DEL MEZZO
+    // =====================================================
+
     async function sbloccaMezzo(codiceQr) {
       const codicePulito =
         String(codiceQr || "").trim();
@@ -1331,10 +1395,6 @@
           "error"
         );
 
-        /*
-          Se il QR era errato, permetto
-          di effettuare una nuova scansione.
-        */
         scansioneInElaborazione = false;
       }
     }
@@ -1360,10 +1420,6 @@
       }
     }
 
-    /*
-      Questa funzione viene chiamata automaticamente
-      quando la fotocamera riconosce un codice QR.
-    */
     async function qrLettoCorrettamente(
       testoDecodificato
     ) {
@@ -1375,7 +1431,7 @@
 
       mostraMessaggio(
         "QR code rilevato. Verifica del mezzo in corso...",
-        "success"
+        "info"
       );
 
       await sbloccaMezzo(
@@ -1383,20 +1439,197 @@
       );
     }
 
-    /*
-      Gli errori di lettura durante l'inquadratura
-      sono normali e non vengono mostrati all'utente.
-    */
     function erroreLetturaQr() {
-      // Nessuna operazione necessaria.
+      // Gli errori mentre il QR non è ancora centrato
+      // sono normali e non vengono mostrati.
+    }
+
+    // =====================================================
+    // GESTIONE FOTOCAMERA, COMPATIBILE CON IPHONE
+    // =====================================================
+
+    function descriviErroreFotocamera(error) {
+      const nomeErrore =
+        String(error?.name || "");
+
+      const testoErrore =
+        String(
+          error?.message ||
+          error ||
+          ""
+        );
+
+      const erroreMinuscolo =
+        testoErrore.toLowerCase();
+
+      if (
+        nomeErrore === "NotAllowedError" ||
+        erroreMinuscolo.includes("permission") ||
+        erroreMinuscolo.includes("denied") ||
+        erroreMinuscolo.includes("notallowed")
+      ) {
+        return (
+          "Safari non ha il permesso di usare la fotocamera. " +
+          "Premi l’icona a sinistra dell’indirizzo, apri Impostazioni sito web " +
+          "e imposta Fotocamera su Consenti."
+        );
+      }
+
+      if (
+        nomeErrore === "NotFoundError" ||
+        erroreMinuscolo.includes("not found") ||
+        erroreMinuscolo.includes("nessuna fotocamera")
+      ) {
+        return (
+          "Nessuna fotocamera disponibile sul dispositivo."
+        );
+      }
+
+      if (
+        nomeErrore === "NotReadableError" ||
+        erroreMinuscolo.includes("could not start") ||
+        erroreMinuscolo.includes("not readable") ||
+        erroreMinuscolo.includes("track start")
+      ) {
+        return (
+          "La fotocamera potrebbe essere utilizzata da un’altra applicazione. " +
+          "Chiudi Fotocamera, FaceTime, WhatsApp e le altre app che possono usare la videocamera."
+        );
+      }
+
+      if (
+        nomeErrore === "OverconstrainedError" ||
+        erroreMinuscolo.includes("overconstrained") ||
+        erroreMinuscolo.includes("requested device not found")
+      ) {
+        return (
+          "La fotocamera selezionata non è disponibile. " +
+          "Ricarica la pagina e riprova."
+        );
+      }
+
+      if (
+        nomeErrore === "SecurityError" ||
+        !window.isSecureContext
+      ) {
+        return (
+          "La fotocamera può essere utilizzata solo attraverso una connessione HTTPS sicura."
+        );
+      }
+
+      if (
+        erroreMinuscolo.includes("camera streaming not supported")
+      ) {
+        return (
+          "La fotocamera non è disponibile in questa modalità. " +
+          "Apri il sito direttamente in Safari, non da WhatsApp e non dall’icona aggiunta alla schermata Home."
+        );
+      }
+
+      return (
+        "Impossibile avviare la fotocamera. Dettaglio: " +
+        (testoErrore || "errore sconosciuto")
+      );
+    }
+
+    async function richiediPermessoFotocamera() {
+      let streamTemporaneo = null;
+
+      try {
+        /*
+          Su iPhone questa chiamata diretta permette a Safari
+          di mostrare subito la richiesta di autorizzazione.
+        */
+        streamTemporaneo =
+          await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false
+          });
+
+        streamTemporaneo
+          .getTracks()
+          .forEach((traccia) => {
+            traccia.stop();
+          });
+
+        return true;
+      } catch (error) {
+        throw error;
+      }
+    }
+
+    function selezionaFotocameraPosteriore(
+      fotocamere
+    ) {
+      if (
+        !Array.isArray(fotocamere) ||
+        fotocamere.length === 0
+      ) {
+        return null;
+      }
+
+      const parolePosteriori = [
+        "back",
+        "rear",
+        "environment",
+        "posteriore",
+        "retro",
+        "world"
+      ];
+
+      const fotocameraPosteriore =
+        fotocamere.find((camera) => {
+          const etichetta =
+            String(camera.label || "")
+              .toLowerCase();
+
+          return parolePosteriori.some(
+            (parola) =>
+              etichetta.includes(parola)
+          );
+        });
+
+      if (fotocameraPosteriore) {
+        return fotocameraPosteriore;
+      }
+
+      /*
+        Su molti iPhone le camere posteriori si trovano
+        nelle ultime posizioni dell'elenco.
+      */
+      return fotocamere[
+        fotocamere.length - 1
+      ];
     }
 
     async function avviaFotocamera() {
       nascondiMessaggio();
+      nascondiDettagliFotocamera();
 
       if (!prenotazioneCorrente) {
         mostraMessaggio(
           "Attendi il caricamento del mezzo prenotato.",
+          "error"
+        );
+
+        return;
+      }
+
+      if (!window.isSecureContext) {
+        mostraMessaggio(
+          "La fotocamera richiede una connessione HTTPS sicura.",
+          "error"
+        );
+
+        return;
+      }
+
+      if (
+        !navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia
+      ) {
+        mostraMessaggio(
+          "Questo browser non permette l'accesso alla fotocamera. Apri il sito direttamente in Safari.",
           "error"
         );
 
@@ -1408,7 +1641,7 @@
         "undefined"
       ) {
         mostraMessaggio(
-          "Il lettore QR non è stato caricato. Controlla la connessione a Internet e ricarica la pagina.",
+          "Il lettore QR non è stato caricato. Controlla la connessione Internet e ricarica la pagina.",
           "error"
         );
 
@@ -1431,24 +1664,83 @@
           "qr-reader"
         );
 
-      placeholder.style.display = "none";
-      reader.style.display = "block";
-
       try {
-        /*
-          Creo il lettore limitandolo
-          ai soli codici QR.
-        */
-        lettoreQr = new Html5Qrcode(
-          "qr-reader",
-          {
-            formatsToSupport: [
-              Html5QrcodeSupportedFormats.QR_CODE
-            ],
-
-            verbose: false
-          }
+        mostraMessaggio(
+          "Richiesta di accesso alla fotocamera in corso...",
+          "info"
         );
+
+        /*
+          Prima chiediamo il permesso direttamente a Safari.
+          Questo passaggio migliora l'affidabilità su iPhone.
+        */
+        await richiediPermessoFotocamera();
+
+        /*
+          Dopo il consenso possiamo recuperare i nomi
+          e gli identificativi reali delle fotocamere.
+        */
+        const fotocamere =
+          await Html5Qrcode.getCameras();
+
+        if (
+          !fotocamere ||
+          fotocamere.length === 0
+        ) {
+          throw new Error(
+            "Nessuna fotocamera rilevata sul dispositivo."
+          );
+        }
+
+        console.log(
+          "Fotocamere disponibili:",
+          fotocamere
+        );
+
+        mostraDettagliFotocamera(
+          "Fotocamere rilevate: " +
+          fotocamere
+            .map((camera) =>
+              camera.label || "Fotocamera"
+            )
+            .join(" | ")
+        );
+
+        const fotocameraScelta =
+          selezionaFotocameraPosteriore(
+            fotocamere
+          );
+
+        if (!fotocameraScelta) {
+          throw new Error(
+            "Non è stato possibile selezionare una fotocamera."
+          );
+        }
+
+        placeholder.style.display =
+          "none";
+
+        reader.style.display =
+          "block";
+
+        /*
+          Pulisco il contenitore nel caso in cui
+          ci sia stato un precedente tentativo.
+        */
+        reader.innerHTML = "";
+
+        lettoreQr =
+          new Html5Qrcode(
+            "qr-reader",
+            {
+              formatsToSupport: [
+                Html5QrcodeSupportedFormats
+                  .QR_CODE
+              ],
+
+              verbose: false
+            }
+          );
 
         const configurazioneScanner = {
           fps: 10,
@@ -1464,8 +1756,11 @@
               );
 
             const latoQuadrato =
-              Math.floor(
-                latoMinimo * 0.68
+              Math.max(
+                180,
+                Math.floor(
+                  latoMinimo * 0.65
+                )
               );
 
             return {
@@ -1474,26 +1769,20 @@
             };
           },
 
-          aspectRatio: 1.333334,
-
+          /*
+            Non imponiamo aspectRatio perché su alcuni
+            modelli di iPhone può bloccare la camera.
+          */
           disableFlip: false
         };
 
         /*
-          Preferisco la fotocamera posteriore,
-          normalmente usata per inquadrare il QR.
+          Avvio tramite deviceId reale della fotocamera.
         */
         await lettoreQr.start(
-          {
-            facingMode: {
-              ideal: "environment"
-            }
-          },
-
+          fotocameraScelta.id,
           configurazioneScanner,
-
           qrLettoCorrettamente,
-
           erroreLetturaQr
         );
 
@@ -1513,15 +1802,39 @@
         );
       } catch (error) {
         console.error(
-          "Errore avvio fotocamera:",
+          "Errore completo avvio fotocamera:",
           error
         );
 
-        reader.style.display = "none";
-        placeholder.style.display = "flex";
+        if (lettoreQr) {
+          try {
+            if (fotocameraAttiva) {
+              await lettoreQr.stop();
+            }
+          } catch (stopError) {
+            console.warn(
+              "Errore arresto lettore:",
+              stopError
+            );
+          }
+
+          try {
+            await lettoreQr.clear();
+          } catch (clearError) {
+            console.warn(
+              "Errore pulizia lettore:",
+              clearError
+            );
+          }
+        }
 
         lettoreQr = null;
         fotocameraAttiva = false;
+        scansioneInElaborazione = false;
+
+        reader.innerHTML = "";
+        reader.style.display = "none";
+        placeholder.style.display = "flex";
 
         document.getElementById(
           "avviaCameraBtn"
@@ -1531,56 +1844,43 @@
           "fermaCameraBtn"
         ).disabled = true;
 
-        let messaggio =
-          "Non è stato possibile avviare la fotocamera.";
-
-        const nomeErrore =
-          String(error?.name || "");
-
-        if (
-          nomeErrore ===
-          "NotAllowedError"
-        ) {
-          messaggio =
-            "Permesso fotocamera negato. Apri le impostazioni del browser e consenti l’uso della fotocamera per questo sito.";
-        } else if (
-          nomeErrore ===
-          "NotFoundError"
-        ) {
-          messaggio =
-            "Nessuna fotocamera disponibile sul dispositivo.";
-        } else if (
-          nomeErrore ===
-          "NotReadableError"
-        ) {
-          messaggio =
-            "La fotocamera è già utilizzata da un’altra applicazione.";
-        }
+        mostraDettagliFotocamera(
+          "Dettaglio tecnico: " +
+          String(
+            error?.message ||
+            error ||
+            "errore sconosciuto"
+          )
+        );
 
         mostraMessaggio(
-          messaggio,
+          descriviErroreFotocamera(error),
           "error"
         );
       }
     }
 
     async function fermaFotocamera() {
-      if (!lettoreQr) {
-        ripristinaAreaScanner();
-        return;
-      }
-
-      try {
-        if (fotocameraAttiva) {
-          await lettoreQr.stop();
+      if (lettoreQr) {
+        try {
+          if (fotocameraAttiva) {
+            await lettoreQr.stop();
+          }
+        } catch (error) {
+          console.warn(
+            "Errore durante l'arresto della fotocamera:",
+            error
+          );
         }
 
-        await lettoreQr.clear();
-      } catch (error) {
-        console.warn(
-          "Errore durante la chiusura della fotocamera:",
-          error
-        );
+        try {
+          await lettoreQr.clear();
+        } catch (error) {
+          console.warn(
+            "Errore durante la pulizia del lettore QR:",
+            error
+          );
+        }
       }
 
       lettoreQr = null;
@@ -1613,6 +1913,10 @@
         "fermaCameraBtn"
       ).disabled = true;
     }
+
+    // =====================================================
+    // EVENTI
+    // =====================================================
 
     document.getElementById(
       "avviaCameraBtn"
@@ -1656,22 +1960,19 @@
     );
 
     window.addEventListener(
-      "beforeunload",
+      "pagehide",
       () => {
         if (
           lettoreQr &&
           fotocameraAttiva
         ) {
-          lettoreQr.stop()
+          lettoreQr
+            .stop()
             .catch(() => {});
         }
       }
     );
 
-    /*
-      Aspetto che siano caricati sia la pagina
-      sia la libreria html5-qrcode.
-    */
     window.addEventListener(
       "load",
       () => {
