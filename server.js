@@ -733,359 +733,88 @@ app.get(
 );
 
 // =====================================================
-// SBLOCCO DEL MEZZO
+// SBLOCCO MEZZO TRAMITE QR
 // =====================================================
 
-// Recupera i dati di una prenotazione specifica
-// da mostrare nella pagina sblocco-mezzo.html.
-app.get(
-  "/api/prenotazioni/:id_prenotazione/sblocco",
-  (req, res) => {
-    const idPrenotazione = Number(
-      req.params.id_prenotazione
-    );
+app.post("/api/sblocca-mezzo", (req, res) => {
+  let { codice_qr } = req.body;
 
-    const idUtente = Number(
-      req.query.id_utente
-    );
-
-    if (
-      !Number.isInteger(idPrenotazione) ||
-      idPrenotazione <= 0
-    ) {
-      res.status(400).json({
-        error:
-          "Identificativo prenotazione non valido"
-      });
-
-      return;
-    }
-
-    if (
-      !Number.isInteger(idUtente) ||
-      idUtente <= 0
-    ) {
-      res.status(400).json({
-        error:
-          "Identificativo utente non valido"
-      });
-
-      return;
-    }
-
-    const sql = `
-      SELECT
-        p.id_prenotazione,
-        p.id_utente,
-        p.id_mezzo,
-        p.stato_prenotazione,
-        p.stato_sblocco,
-        p.data_ora_prenotazione,
-        p.data_ora_scadenza,
-        p.data_ora_sblocco,
-        m.tipo,
-        m.modello,
-        m.area,
-        m.batteria,
-        m.tariffa_minuto,
-        m.stato AS stato_mezzo
-      FROM prenotazioni p
-      JOIN mezzi m
-        ON p.id_mezzo = m.id_mezzo
-      WHERE p.id_prenotazione = ?
-        AND p.id_utente = ?
-    `;
-
-    db.query(
-      sql,
-      [
-        idPrenotazione,
-        idUtente
-      ],
-      (err, rows) => {
-        if (err) {
-          console.error(
-            "Errore recupero dati sblocco:",
-            err.message
-          );
-
-          res.status(500).json({
-            error:
-              "Errore durante il recupero della prenotazione",
-            dettaglio: err.message
-          });
-
-          return;
-        }
-
-        if (rows.length === 0) {
-          res.status(404).json({
-            error:
-              "Prenotazione non trovata oppure non appartenente all'utente"
-          });
-
-          return;
-        }
-
-        res.json(rows[0]);
-      }
-    );
+  if (!codice_qr) {
+    return res.status(400).json({
+      error: "Codice QR mancante"
+    });
   }
-);
 
-// Verifica il codice QR e sblocca il mezzo.
-app.post(
-  "/api/prenotazioni/:id_prenotazione/sblocca",
-  (req, res) => {
-    const idPrenotazione = Number(
-      req.params.id_prenotazione
-    );
+  // Se arriva un link completo, estrai il codice_qr
+  if (codice_qr.includes("codice_qr=")) {
+    try {
+      const url = new URL(codice_qr);
+      codice_qr = url.searchParams.get("codice_qr");
+    } catch (e) {
+      console.error(e);
+    }
+  }
 
-    const idUtente = Number(
-      req.body.id_utente
-    );
+  const sqlMezzo = `
+    SELECT *
+    FROM mezzi
+    WHERE codice_qr = ?
+  `;
 
-    const codiceQr = String(
-      req.body.codice_qr || ""
-    ).trim();
+  db.query(sqlMezzo, [codice_qr], (err, rows) => {
+    if (err) {
+      console.error("Errore ricerca mezzo:", err);
 
-    if (
-      !Number.isInteger(idPrenotazione) ||
-      idPrenotazione <= 0
-    ) {
-      res.status(400).json({
-        error:
-          "Identificativo prenotazione non valido"
+      return res.status(500).json({
+        error: "Errore database"
       });
-
-      return;
     }
 
-    if (
-      !Number.isInteger(idUtente) ||
-      idUtente <= 0
-    ) {
-      res.status(400).json({
-        error:
-          "Identificativo utente non valido"
+    if (rows.length === 0) {
+      return res.status(404).json({
+        error: "QR non valido"
       });
-
-      return;
     }
 
-    if (!codiceQr) {
-      res.status(400).json({
-        error:
-          "Il codice QR è obbligatorio"
-      });
+    const mezzo = rows[0];
 
-      return;
-    }
-
-    const cercaPrenotazioneSql = `
-      SELECT
-        p.id_prenotazione,
-        p.id_utente,
-        p.id_mezzo,
-        p.stato_prenotazione,
-        p.stato_sblocco,
-        p.data_ora_scadenza,
-        m.codice_qr,
-        m.tipo,
-        m.modello,
-        m.stato AS stato_mezzo
-      FROM prenotazioni p
-      JOIN mezzi m
-        ON p.id_mezzo = m.id_mezzo
-      WHERE p.id_prenotazione = ?
-        AND p.id_utente = ?
+    const aggiornaSql = `
+      UPDATE mezzi
+      SET stato = 'in_uso'
+      WHERE id_mezzo = ?
     `;
 
     db.query(
-      cercaPrenotazioneSql,
-      [
-        idPrenotazione,
-        idUtente
-      ],
-      (err, rows) => {
-        if (err) {
+      aggiornaSql,
+      [mezzo.id_mezzo],
+      (errAggiorna) => {
+        if (errAggiorna) {
           console.error(
-            "Errore verifica prenotazione per sblocco:",
-            err.message
+            "Errore aggiornamento mezzo:",
+            errAggiorna
           );
 
-          res.status(500).json({
-            error:
-              "Errore durante la verifica della prenotazione",
-            dettaglio: err.message
+          return res.status(500).json({
+            error: "Errore aggiornamento"
           });
-
-          return;
         }
 
-        if (rows.length === 0) {
-          res.status(404).json({
-            error:
-              "Prenotazione non trovata oppure non appartenente all'utente"
-          });
-
-          return;
-        }
-
-        const prenotazione = rows[0];
-
-        if (
-          String(
-            prenotazione.stato_prenotazione
-          )
-            .trim()
-            .toLowerCase() !== "attiva"
-        ) {
-          res.status(409).json({
-            error:
-              "La prenotazione non è più attiva"
-          });
-
-          return;
-        }
-
-        if (
-          String(
-            prenotazione.stato_sblocco
-          )
-            .trim()
-            .toLowerCase() === "sbloccato"
-        ) {
-          res.status(409).json({
-            error:
-              "Il mezzo è già stato sbloccato"
-          });
-
-          return;
-        }
-
-        const scadenza = new Date(
-          prenotazione.data_ora_scadenza
-        );
-
-        if (
-          !Number.isNaN(scadenza.getTime()) &&
-          scadenza < new Date()
-        ) {
-          res.status(409).json({
-            error:
-              "La prenotazione è scaduta. Prenota nuovamente il mezzo"
-          });
-
-          return;
-        }
-
-        const codiceQrMezzo = String(
-          prenotazione.codice_qr || ""
-        ).trim();
-
-        if (!codiceQrMezzo) {
-          res.status(409).json({
-            error:
-              "Il mezzo non possiede ancora un codice QR configurato"
-          });
-
-          return;
-        }
-
-        if (codiceQrMezzo !== codiceQr) {
-          res.status(403).json({
-            error:
-              "Il codice QR non appartiene al mezzo prenotato"
-          });
-
-          return;
-        }
-
-        const aggiornaPrenotazioneSql = `
-          UPDATE prenotazioni
-          SET
-            stato_sblocco = 'sbloccato',
-            data_ora_sblocco = NOW()
-          WHERE id_prenotazione = ?
-            AND id_utente = ?
-            AND LOWER(
-              TRIM(stato_prenotazione)
-            ) = 'attiva'
-        `;
-
-        db.query(
-          aggiornaPrenotazioneSql,
-          [
-            idPrenotazione,
-            idUtente
-          ],
-          (err, result) => {
-            if (err) {
-              console.error(
-                "Errore sblocco mezzo:",
-                err.message
-              );
-
-              res.status(500).json({
-                error:
-                  "Errore durante lo sblocco del mezzo",
-                dettaglio: err.message
-              });
-
-              return;
-            }
-
-            if (
-              result.affectedRows === 0
-            ) {
-              res.status(409).json({
-                error:
-                  "Non è stato possibile sbloccare il mezzo"
-              });
-
-              return;
-            }
-
-            console.log(
-              "Mezzo sbloccato:",
-              prenotazione.id_mezzo
-            );
-
-            console.log(
-              "Prenotazione:",
-              idPrenotazione
-            );
-
-            res.json({
-              message:
-                "Mezzo sbloccato correttamente",
-
-              id_prenotazione:
-                idPrenotazione,
-
-              id_mezzo:
-                prenotazione.id_mezzo,
-
-              tipo:
-                prenotazione.tipo,
-
-              modello:
-                prenotazione.modello,
-
-              stato_sblocco:
-                "sbloccato",
-
-              data_ora_sblocco:
-                new Date().toISOString()
-            });
+        res.json({
+          success: true,
+          messaggio: "Mezzo sbloccato",
+          mezzo: {
+            id_mezzo: mezzo.id_mezzo,
+            tipo: mezzo.tipo,
+            modello: mezzo.modello,
+            batteria: mezzo.batteria,
+            tariffa_minuto: mezzo.tariffa_minuto,
+            area: mezzo.area
           }
-        );
+        });
       }
     );
-  }
-);
-
+  });
+});
 // =====================================================
 // TERMINE DELLA CORSA
 // =====================================================
