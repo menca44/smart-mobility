@@ -2108,7 +2108,7 @@ const pulsanteQr = mezzo.codice_qr
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            id_utente: ID_UTENTE_CORRENTE,
+            id_utente: ID_UTENTE_CORRENTE || 1,
             id_mezzo: idMezzo
           })
         });
