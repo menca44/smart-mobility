@@ -6,14 +6,15 @@
   <title>MoveLanDs - Chi siamo</title>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
-      background: #f4faf7;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(7, 150, 105, 0.18), transparent 30%),
+        radial-gradient(circle at 85% 15%, rgba(6, 70, 99, 0.16), transparent 28%),
+        linear-gradient(135deg, #f4faf7 0%, #eaf7f1 45%, #f8fbff 100%);
       color: #111827;
     }
 
@@ -23,15 +24,16 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: #ffffff;
+      background: rgba(255,255,255,0.92);
       border-bottom: 1px solid #e5e7eb;
+      box-shadow: 0 8px 24px rgba(17, 45, 35, 0.04);
     }
 
     .brand {
       display: flex;
       align-items: center;
       gap: 16px;
-      color: #12372a;
+      text-decoration: none;
     }
 
     .brand-logo {
@@ -41,26 +43,14 @@
       border-radius: 14px;
     }
 
-    .brand-text {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-
     .brand-title {
       font-size: 31px;
       font-weight: 800;
-      letter-spacing: -0.8px;
       line-height: 1;
     }
 
-    .brand-title-blue {
-      color: #064663;
-    }
-
-    .brand-title-green {
-      color: #079669;
-    }
+    .brand-title-blue { color: #064663; }
+    .brand-title-green { color: #079669; }
 
     .brand-subtitle {
       font-size: 11px;
@@ -72,90 +62,135 @@
 
     .back-link {
       color: #079669;
-      font-weight: 700;
+      font-weight: 800;
       text-decoration: none;
       font-size: 15px;
-    }
-
-    .page-content {
-      min-height: calc(100vh - 105px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 70px 30px;
-    }
-
-    .draft-card {
-      max-width: 850px;
-      width: 100%;
+      padding: 12px 18px;
+      border-radius: 999px;
+      border: 1px solid #cfe7dc;
       background: #ffffff;
-      border-radius: 28px;
-      padding: 55px;
-      text-align: center;
-      box-shadow: 0 18px 45px rgba(17, 45, 35, 0.12);
-      border: 1px solid #e5eee9;
     }
 
-    .draft-card span {
+    .page-content { padding: 70px; }
+
+    .hero, .wide-section {
+      max-width: 1150px;
+      margin: 0 auto 24px;
+      background: rgba(255,255,255,0.92);
+      border-radius: 32px;
+      padding: 55px;
+      box-shadow: 0 22px 55px rgba(17, 45, 35, 0.12);
+      border: 1px solid rgba(255,255,255,0.8);
+    }
+
+    .badge {
       display: inline-block;
       padding: 9px 15px;
       border-radius: 999px;
       background: #e7f7ef;
       color: #08734f;
       font-size: 14px;
-      font-weight: 700;
-      margin-bottom: 22px;
+      font-weight: 800;
+      margin-bottom: 20px;
     }
 
-    .draft-card h1 {
-      font-size: 44px;
+    .hero h1 {
+      font-size: 48px;
       color: #12372a;
       margin: 0 0 20px;
+      line-height: 1.1;
     }
 
-    .draft-card p {
-      font-size: 18px;
+    .hero h1 span { color: #079669; }
+
+    .hero p, .wide-section p {
+      font-size: 17px;
       line-height: 1.7;
       color: #4b5563;
-      margin: 0 auto 30px;
-      max-width: 650px;
+      margin: 0 0 18px;
     }
 
-    .draft-note {
-      background: #f4faf7;
+    .wide-section h2 {
+      margin: 0 0 16px;
+      color: #12372a;
+      font-size: 32px;
+    }
+
+    .sections {
+      max-width: 1150px;
+      margin: 0 auto 24px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 16px 38px rgba(17, 45, 35, 0.10);
       border: 1px solid #e0ebe6;
+    }
+
+    .card-icon {
+      width: 56px;
+      height: 56px;
       border-radius: 18px;
-      padding: 22px;
-      color: #566761;
+      background: #e7f7ef;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 18px;
+    }
+
+    .card h2 {
+      margin: 0 0 12px;
+      color: #12372a;
+      font-size: 23px;
+    }
+
+    .card p {
+      margin: 0;
+      color: #4b5563;
       font-size: 15px;
       line-height: 1.6;
     }
 
-    @media (max-width: 700px) {
+    .values {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 25px;
+    }
+
+    .value {
+      background: #f7fbf9;
+      border: 1px solid #e0ebe6;
+      border-radius: 18px;
+      padding: 18px;
+      font-weight: 800;
+      color: #12372a;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
       .navbar {
-        padding: 0 30px;
+        padding: 18px 25px;
+        height: auto;
+        flex-direction: column;
+        gap: 16px;
       }
 
-      .brand-logo {
-        width: 64px;
-        height: 64px;
-      }
+      .page-content { padding: 35px 22px; }
 
-      .brand-title {
-        font-size: 25px;
-      }
+      .hero, .wide-section { padding: 35px 25px; }
 
-      .brand-subtitle {
-        font-size: 9px;
-      }
+      .hero h1 { font-size: 36px; }
 
-      .draft-card {
-        padding: 35px 25px;
-      }
+      .sections { grid-template-columns: 1fr; }
 
-      .draft-card h1 {
-        font-size: 34px;
-      }
+      .values { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
@@ -163,35 +198,109 @@
 <body>
 
   <header class="navbar">
-    <div class="brand">
+    <a href="index.html" class="brand">
       <img src="ProPic.png" alt="Logo MoveLanDs" class="brand-logo">
 
-      <div class="brand-text">
-        <span class="brand-title">
+      <div>
+        <div class="brand-title">
           <span class="brand-title-blue">Move</span><span class="brand-title-green">LanDs</span>
-        </span>
-        <span class="brand-subtitle">Smart mobility platform</span>
+        </div>
+        <div class="brand-subtitle">Smart mobility platform</div>
       </div>
-    </div>
+    </a>
 
     <a href="index.html" class="back-link">Torna alla Home</a>
   </header>
 
   <main class="page-content">
-    <section class="draft-card">
-      <span>Chi siamo</span>
 
-      <h1>Pagina in costruzione</h1>
+    <section class="hero">
+      <span class="badge">Chi siamo</span>
+
+      <h1>Una piattaforma per una <span>mobilità urbana più semplice</span>.</h1>
 
       <p>
-        Questa sezione sarà dedicata alla descrizione del progetto MoveLanDs,
-        del team, degli obiettivi della piattaforma e del valore offerto alla mobilità urbana.
+        MoveLanDs nasce per aiutarti a muoverti in città in modo più rapido, comodo e sostenibile.
+        Con un’unica piattaforma puoi trovare e prenotare biciclette, auto, scooter e monopattini
+        elettrici vicino a te.
       </p>
+    </section>
 
-      <div class="draft-note">
-        Bozza temporanea: il contenuto definitivo verrà aggiunto successivamente.
+    <section class="sections">
+      <div class="card">
+        <div class="card-icon">🚲</div>
+        <h2>Mobilità condivisa</h2>
+        <p>
+          Visualizzi i mezzi disponibili sulla mappa e scegli quello più adatto al tuo tragitto.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">🌱</div>
+        <h2>Sostenibilità</h2>
+        <p>
+          Utilizzi mezzi condivisi ed elettrici, contribuendo a ridurre traffico e inquinamento.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">📍</div>
+        <h2>Semplicità</h2>
+        <p>
+          Gestisci spostamenti e prenotazioni da un solo account, senza passaggi complicati.
+        </p>
       </div>
     </section>
+
+    <section class="wide-section">
+      <h2>Il nostro obiettivo</h2>
+
+      <p>
+        Vogliamo rendere gli spostamenti quotidiani più semplici per studenti, lavoratori,
+        cittadini e turisti.
+      </p>
+
+      <p>
+        MoveLanDs ti permette di scegliere il mezzo più comodo in base alla distanza,
+        al tempo disponibile e alle tue esigenze del momento.
+      </p>
+
+      <div class="values">
+        <div class="value">Innovazione</div>
+        <div class="value">Semplicità</div>
+        <div class="value">Sicurezza</div>
+        <div class="value">Sostenibilità</div>
+      </div>
+    </section>
+
+    <section class="wide-section">
+      <h2>Perché scegliere MoveLanDs</h2>
+
+      <p>
+        MoveLanDs rende gli spostamenti in città più semplici, veloci e sostenibili.
+        In pochi secondi puoi individuare il mezzo più vicino, verificarne la disponibilità
+        e iniziare il tuo viaggio.
+      </p>
+
+      <p>
+        Che tu debba andare al lavoro, all'università o semplicemente spostarti in città,
+        la piattaforma ti permette di scegliere tra biciclette, auto, scooter e monopattini
+        in base alle tue esigenze.
+      </p>
+
+      <p>
+        Con un'unica applicazione hai tutto ciò che ti serve per muoverti in modo pratico,
+        risparmiando tempo e contribuendo a una mobilità più efficiente e rispettosa dell'ambiente.
+      </p>
+
+      <div class="values">
+        <div class="value">Velocità</div>
+        <div class="value">Comodità</div>
+        <div class="value">Libertà</div>
+        <div class="value">Sostenibilità</div>
+      </div>
+    </section>
+
   </main>
 
 </body>
