@@ -403,24 +403,25 @@ app.get("/api/utenti", (req, res) => {
 
 app.post("/api/prenotazioni", (req, res) => {
   const idUtente =
-    Number(req.body.id_utente);
+  Number(req.body.id_utente);
 
-  const idMezzo =
-    Number(req.body.id_mezzo);
+// L'ID del mezzo può essere alfanumerico,
+// per esempio "A-301" oppure "M-145".
+const idMezzo =
+  String(req.body.id_mezzo || "").trim();
 
-  if (
-    !Number.isInteger(idUtente) ||
-    idUtente <= 0 ||
-    !Number.isInteger(idMezzo) ||
-    idMezzo <= 0
-  ) {
-    res.status(400).json({
-      error:
-        "id_utente e id_mezzo sono obbligatori"
-    });
+if (
+  !Number.isInteger(idUtente) ||
+  idUtente <= 0 ||
+  !idMezzo
+) {
+  res.status(400).json({
+    error:
+      "id_utente e id_mezzo sono obbligatori"
+  });
 
-    return;
-  }
+  return;
+}
 
   db.getConnection(
     (connectionError, connection) => {

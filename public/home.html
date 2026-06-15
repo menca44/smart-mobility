@@ -1756,15 +1756,48 @@
 
   <script>
     let utenteCorrente = null;
+let ID_UTENTE_CORRENTE = null;
 
-    try {
-      const utenteSalvato = localStorage.getItem("movelands_utente");
-      utenteCorrente = utenteSalvato ? JSON.parse(utenteSalvato) : null;
-    } catch (error) {
-      utenteCorrente = null;
-    }
+try {
+  const utenteSalvato =
+    localStorage.getItem("movelands_utente");
 
-    const ID_UTENTE_CORRENTE = utenteCorrente && utenteCorrente.id_utente ? utenteCorrente.id_utente : 1;
+  const datiSalvati =
+    utenteSalvato
+      ? JSON.parse(utenteSalvato)
+      : null;
+
+  /*
+   * Gestisce entrambe le possibili strutture:
+   *
+   * 1. { id_utente: 4, nome: "Mario" }
+   * 2. { utente: { id_utente: 4, nome: "Mario" } }
+   */
+  if (
+    datiSalvati &&
+    datiSalvati.utente
+  ) {
+    utenteCorrente = datiSalvati.utente;
+  } else {
+    utenteCorrente = datiSalvati;
+  }
+
+  if (
+    utenteCorrente &&
+    utenteCorrente.id_utente
+  ) {
+    ID_UTENTE_CORRENTE =
+      Number(utenteCorrente.id_utente);
+  }
+} catch (error) {
+  console.error(
+    "Errore lettura utente:",
+    error
+  );
+
+  utenteCorrente = null;
+  ID_UTENTE_CORRENTE = null;
+}
 
     if (utenteCorrente && utenteCorrente.nome) {
       document.getElementById("utenteCorrenteLabel").textContent =
@@ -2090,45 +2123,144 @@
     }
 
     async function prenotaMezzo(idMezzo) {
-      try {
-        const response = await fetch("/api/prenotazioni", {
+  // Converte entrambi gli identificativi in numeri.
+  const idUtenteNumerico =
+    Number(ID_UTENTE_CORRENTE);
+
+  const idMezzoValido =
+  String(idMezzo || "").trim();
+
+  console.log(
+  "Dati prenotazione:",
+  {
+    id_utente: idUtenteNumerico,
+    id_mezzo: idMezzoValido
+  }
+);
+
+  // Controlla che l'utente sia autenticato.
+  if (
+    !Number.isInteger(idUtenteNumerico) ||
+    idUtenteNumerico <= 0
+  ) {
+    alert(
+      "Utente non riconosciuto. Effettua nuovamente il login."
+    );
+
+    window.location.href = "index.html";
+    return;
+  }
+
+  // Controlla che il mezzo abbia un ID valido.
+  if (!idMezzoValido) {
+    alert(
+      "Errore: identificativo del mezzo non valido."
+    );
+
+    console.error(
+      "ID mezzo ricevuto:",
+      idMezzo
+    );
+
+    return;
+  }
+
+  try {
+    const response =
+      await fetch(
+        "/api/prenotazioni",
+        {
           method: "POST",
+
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type":
+              "application/json"
           },
+
           body: JSON.stringify({
-            id_utente: ID_UTENTE_CORRENTE || 1,
-            id_mezzo: idMezzo
+            id_utente:
+              idUtenteNumerico,
+
+            id_mezzo:
+               idMezzoValido
           })
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-          alert("Errore: " + result.error);
-          return;
         }
+      );
 
-        alert(
-          "Prenotazione completata correttamente.\n" +
-          "ID prenotazione: " + result.id_prenotazione + "\n" +
-          "Mezzo prenotato: " + result.id_mezzo
-        );
+    const testoRisposta =
+      await response.text();
 
-        await caricaMezziDalDatabase();
+    let result;
 
-        const bookingsPanel = document.getElementById("bookingsPanel");
+    try {
+      result =
+        testoRisposta
+          ? JSON.parse(testoRisposta)
+          : {};
+    } catch (parseError) {
+      console.error(
+        "Risposta non JSON:",
+        testoRisposta
+      );
 
-        if (bookingsPanel.classList.contains("active")) {
-          await caricaPrenotazioniUtente();
-        }
+      alert(
+        "Il server ha restituito una risposta non valida."
+      );
 
-      } catch (error) {
-        alert("Errore di connessione con il server.");
-        console.error("Errore prenotazione:", error);
-      }
+      return;
     }
 
+    if (!response.ok) {
+      console.error(
+        "Errore prenotazione:",
+        result
+      );
+
+      alert(
+        "Errore: " +
+        (
+          result.error ||
+          "Prenotazione non riuscita"
+        )
+      );
+
+      return;
+    }
+
+    alert(
+      "Prenotazione completata correttamente.\n" +
+      "ID prenotazione: " +
+      result.id_prenotazione +
+      "\n" +
+      "Mezzo prenotato: " +
+      result.id_mezzo
+    );
+
+    await caricaMezziDalDatabase();
+
+    const bookingsPanel =
+      document.getElementById(
+        "bookingsPanel"
+      );
+
+    if (
+      bookingsPanel.classList.contains(
+        "active"
+      )
+    ) {
+      await caricaPrenotazioniUtente();
+    }
+  } catch (error) {
+    alert(
+      "Errore di connessione con il server."
+    );
+
+    console.error(
+      "Errore prenotazione:",
+      error
+    );
+  }
+}
     async function terminaPrenotazione(idPrenotazione) {
       const conferma = confirm("Vuoi terminare questa prenotazione? Il mezzo tornerà disponibile sulla mappa.");
 
