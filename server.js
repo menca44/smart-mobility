@@ -1046,26 +1046,23 @@ app.post(
             }
 
             const cercaSql = `
-  SELECT
-    p.id_prenotazione,
-    p.id_utente,
-    p.id_mezzo,
-    p.stato_prenotazione,
-    p.stato_sblocco,
-    p.data_ora_scadenza,
-    m.codice_qr,
-    m.tipo,
-    m.modello,
-    COALESCE(port.saldo, 0) AS saldo_portafoglio
-  FROM prenotazioni p
-  JOIN mezzi m
-    ON p.id_mezzo = m.id_mezzo
-  LEFT JOIN portafogli port
-    ON p.id_utente = port.id_utente
-  WHERE p.id_prenotazione = ?
-    AND p.id_utente = ?
-  FOR UPDATE
-`;
+              SELECT
+                p.id_prenotazione,
+                p.id_utente,
+                p.id_mezzo,
+                p.stato_prenotazione,
+                p.stato_sblocco,
+                p.data_ora_scadenza,
+                m.codice_qr,
+                m.tipo,
+                m.modello
+              FROM prenotazioni p
+              JOIN mezzi m
+                ON p.id_mezzo = m.id_mezzo
+              WHERE p.id_prenotazione = ?
+                AND p.id_utente = ?
+              FOR UPDATE
+            `;
 
             connection.query(
               cercaSql,
@@ -1156,25 +1153,6 @@ app.post(
                     }
                   );
                 }
-                // Controlla che l'utente abbia del denaro nel portafoglio.
-const saldoPortafoglio = Number(
-  prenotazione.saldo_portafoglio || 0
-);
-
-if (
-  Number.isNaN(saldoPortafoglio) ||
-  saldoPortafoglio <= 0
-) {
-  return connection.rollback(() => {
-    connection.release();
-
-    res.status(409).json({
-      error:
-        "Saldo insufficiente. Devi ricaricare il portafoglio prima di sbloccare il mezzo.",
-      saldo: saldoPortafoglio
-    });
-  });
-}
 
                 const dataScadenza =
                   new Date(
@@ -1730,21 +1708,20 @@ app.put(
             }
 
             const cercaSql = `
-  SELECT
-    p.id_prenotazione,
-    p.id_utente,
-    p.id_mezzo,
-    p.stato_prenotazione,
-    p.stato_sblocco,
-    p.data_ora_prenotazione,
-    p.data_ora_sblocco,
-    m.tariffa_minuto
-  FROM prenotazioni p
-  JOIN mezzi m
-    ON p.id_mezzo = m.id_mezzo
-  WHERE p.id_prenotazione = ?
-  FOR UPDATE
-`;
+              SELECT
+                p.id_prenotazione,
+                p.id_mezzo,
+                p.stato_prenotazione,
+                p.stato_sblocco,
+                p.data_ora_prenotazione,
+                p.data_ora_sblocco,
+                m.tariffa_minuto
+              FROM prenotazioni p
+              JOIN mezzi m
+                ON p.id_mezzo = m.id_mezzo
+              WHERE p.id_prenotazione = ?
+              FOR UPDATE
+            `;
 
             connection.query(
               cercaSql,
@@ -1897,257 +1874,124 @@ app.put(
                         ).toFixed(2)
                       );
 
-
-                                        // Sottrae il costo della corsa dal portafoglio.
-                    const aggiornaPortafoglioSql = `
-                      UPDATE portafogli
-                      SET saldo = saldo - ?
-                      WHERE id_utente = ?
+                    const completaSql = `
+                      UPDATE prenotazioni
+                      SET
+                        stato_prenotazione = 'completata',
+                        data_ora_fine = NOW(),
+                        durata_minuti = ?,
+                        costo_totale = ?
+                      WHERE id_prenotazione = ?
                     `;
 
                     connection.query(
-                      aggiornaPortafoglioSql,
+                      completaSql,
                       [
+                        durataMinuti,
                         costoTotale,
-                        prenotazione.id_utente
+                        idPrenotazione
                       ],
                       (
-                        walletError,
-                        walletResult
+                        updateError
                       ) => {
-                        if (walletError) {
-                          return connection.rollback(
-                            () => {
-                              connection.release();
-
-                              res.status(500).json({
-                                error:
-                                  "Errore durante l'addebito della corsa",
-                                dettaglio:
-                                  walletError.message
-                              });
-                            }
-                          );
-                        }
-
-                        // Se non è stato aggiornato nessun portafoglio,
-                        // significa che l'utente non ne possiede uno.
                         if (
-                          walletResult.affectedRows === 0
+                          updateError
                         ) {
                           return connection.rollback(
                             () => {
                               connection.release();
 
-                              res.status(404).json({
-                                error:
-                                  "Portafoglio dell'utente non trovato"
-                              });
+                              res
+                                .status(500)
+                                .json({
+                                  error:
+                                    "Errore durante la conclusione della corsa",
+                                  dettaglio:
+                                    updateError.message
+                                });
                             }
                           );
                         }
 
-                        // Registra la prenotazione come completata.
-                        const completaSql = `
-                          UPDATE prenotazioni
-                          SET
-                            stato_prenotazione = 'completata',
-                            data_ora_fine = NOW(),
-                            durata_minuti = ?,
-                            costo_totale = ?
-                          WHERE id_prenotazione = ?
+                        const liberaMezzoSql = `
+                          UPDATE mezzi
+                          SET stato = 'disponibile'
+                          WHERE id_mezzo = ?
                         `;
 
                         connection.query(
-                          completaSql,
+                          liberaMezzoSql,
                           [
-                            durataMinuti,
-                            costoTotale,
-                            idPrenotazione
+                            prenotazione
+                              .id_mezzo
                           ],
                           (
-                            updateError,
-                            updateResult
+                            vehicleError
                           ) => {
-                            if (updateError) {
-                              return connection.rollback(
-                                () => {
-                                  connection.release();
-
-                                  res.status(500).json({
-                                    error:
-                                      "Errore durante la conclusione della corsa",
-                                    dettaglio:
-                                      updateError.message
-                                  });
-                                }
-                              );
-                            }
-
                             if (
-                              updateResult.affectedRows === 0
+                              vehicleError
                             ) {
                               return connection.rollback(
                                 () => {
                                   connection.release();
 
-                                  res.status(409).json({
-                                    error:
-                                      "Non è stato possibile completare la prenotazione"
-                                  });
+                                  res
+                                    .status(500)
+                                    .json({
+                                      error:
+                                        "Errore durante il ripristino del mezzo",
+                                      dettaglio:
+                                        vehicleError.message
+                                    });
                                 }
                               );
                             }
 
-                            // Rende nuovamente disponibile il mezzo.
-                            const liberaMezzoSql = `
-                              UPDATE mezzi
-                              SET stato = 'disponibile'
-                              WHERE id_mezzo = ?
-                            `;
-
-                            connection.query(
-                              liberaMezzoSql,
-                              [
-                                prenotazione.id_mezzo
-                              ],
+                            connection.commit(
                               (
-                                vehicleError,
-                                vehicleResult
+                                commitError
                               ) => {
-                                if (vehicleError) {
-                                  return connection.rollback(
-                                    () => {
-                                      connection.release();
-
-                                      res.status(500).json({
-                                        error:
-                                          "Errore durante il ripristino del mezzo",
-                                        dettaglio:
-                                          vehicleError.message
-                                      });
-                                    }
-                                  );
-                                }
-
                                 if (
-                                  vehicleResult.affectedRows === 0
+                                  commitError
                                 ) {
                                   return connection.rollback(
                                     () => {
                                       connection.release();
 
-                                      res.status(404).json({
-                                        error:
-                                          "Mezzo non trovato"
-                                      });
+                                      res
+                                        .status(500)
+                                        .json({
+                                          error:
+                                            "Errore durante il completamento della corsa",
+                                          dettaglio:
+                                            commitError.message
+                                        });
                                     }
                                   );
                                 }
 
-                                // Recupera il saldo aggiornato.
-                                const recuperaSaldoSql = `
-                                  SELECT saldo
-                                  FROM portafogli
-                                  WHERE id_utente = ?
-                                  LIMIT 1
-                                `;
+                                connection.release();
 
-                                connection.query(
-                                  recuperaSaldoSql,
-                                  [
-                                    prenotazione.id_utente
-                                  ],
-                                  (
-                                    saldoError,
-                                    saldoRows
-                                  ) => {
-                                    if (saldoError) {
-                                      return connection.rollback(
-                                        () => {
-                                          connection.release();
+                                res.json({
+                                  message:
+                                    "Corsa terminata correttamente",
 
-                                          res.status(500).json({
-                                            error:
-                                              "Errore durante il recupero del nuovo saldo",
-                                            dettaglio:
-                                              saldoError.message
-                                          });
-                                        }
-                                      );
-                                    }
+                                  id_prenotazione:
+                                    idPrenotazione,
 
-                                    if (
-                                      saldoRows.length === 0
-                                    ) {
-                                      return connection.rollback(
-                                        () => {
-                                          connection.release();
+                                  id_mezzo:
+                                    prenotazione
+                                      .id_mezzo,
 
-                                          res.status(404).json({
-                                            error:
-                                              "Portafoglio dell'utente non trovato"
-                                          });
-                                        }
-                                      );
-                                    }
+                                  durata_minuti:
+                                    durataMinuti,
 
-                                    const saldoAggiornato =
-                                      Number(
-                                        saldoRows[0].saldo
-                                      );
+                                  tariffa_minuto:
+                                    tariffaMinuto,
 
-                                    // Conferma tutte le modifiche:
-                                    // addebito, corsa completata e mezzo disponibile.
-                                    connection.commit(
-                                      (
-                                        commitError
-                                      ) => {
-                                        if (
-                                          commitError
-                                        ) {
-                                          return connection.rollback(
-                                            () => {
-                                              connection.release();
-
-                                              res.status(500).json({
-                                                error:
-                                                  "Errore durante il completamento della corsa",
-                                                dettaglio:
-                                                  commitError.message
-                                              });
-                                            }
-                                          );
-                                        }
-
-                                        connection.release();
-
-                                        res.json({
-                                          message:
-                                            "Corsa terminata correttamente",
-
-                                          id_prenotazione:
-                                            idPrenotazione,
-
-                                          id_mezzo:
-                                            prenotazione.id_mezzo,
-
-                                          durata_minuti:
-                                            durataMinuti,
-
-                                          tariffa_minuto:
-                                            tariffaMinuto,
-
-                                          costo_totale:
-                                            costoTotale,
-
-                                          saldo_aggiornato:
-                                            saldoAggiornato
-                                        });
-                                      }
-                                    );
-                                  }
-                                );
+                                  costo_totale:
+                                    costoTotale
+                                });
                               }
                             );
                           }
