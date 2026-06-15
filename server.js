@@ -726,7 +726,103 @@ app.post("/api/carte", (req, res) => {
     });
   });
 });
+// =====================================================
+// ELIMINAZIONE DI UNA CARTA
+// =====================================================
 
+// Elimina una carta appartenente all'utente indicato.
+// Il controllo dell'id_utente impedisce di eliminare carte
+// appartenenti a un altro utente.
+app.delete("/api/carte/:id_carta", (req, res) => {
+  const idCarta = Number(req.params.id_carta);
+  const idUtente = Number(req.body.id_utente);
+
+  // Controllo che l'identificativo della carta sia valido.
+  if (!Number.isInteger(idCarta) || idCarta <= 0) {
+    res.status(400).json({
+      error: "Identificativo carta non valido"
+    });
+    return;
+  }
+
+  // Controllo che l'identificativo dell'utente sia valido.
+  if (!Number.isInteger(idUtente) || idUtente <= 0) {
+    res.status(400).json({
+      error: "Identificativo utente non valido"
+    });
+    return;
+  }
+
+  // Cerco la carta controllando contemporaneamente
+  // che appartenga davvero all'utente indicato.
+  const verificaCartaSql = `
+    SELECT
+      id_carta,
+      id_utente,
+      circuito,
+      ultime_quattro
+    FROM carte_pagamento
+    WHERE id_carta = ?
+      AND id_utente = ?
+  `;
+
+  db.query(verificaCartaSql, [idCarta, idUtente], (err, rows) => {
+    if (err) {
+      console.error("Errore verifica carta da eliminare:", err.message);
+
+      res.status(500).json({
+        error: "Errore durante la verifica della carta",
+        dettaglio: err.message
+      });
+      return;
+    }
+
+    // Se non viene trovata, la carta non esiste
+    // oppure appartiene a un altro utente.
+    if (rows.length === 0) {
+      res.status(404).json({
+        error: "Carta non trovata oppure non appartenente all'utente"
+      });
+      return;
+    }
+
+    const carta = rows[0];
+
+    // Elimino la carta solo se id_carta e id_utente coincidono.
+    const eliminaCartaSql = `
+      DELETE FROM carte_pagamento
+      WHERE id_carta = ?
+        AND id_utente = ?
+    `;
+
+    db.query(eliminaCartaSql, [idCarta, idUtente], (err, result) => {
+      if (err) {
+        console.error("Errore eliminazione carta:", err.message);
+
+        res.status(500).json({
+          error: "Errore durante l'eliminazione della carta",
+          dettaglio: err.message
+        });
+        return;
+      }
+
+      // Controllo aggiuntivo nel caso in cui la carta
+      // sia già stata eliminata.
+      if (result.affectedRows === 0) {
+        res.status(404).json({
+          error: "Carta non trovata oppure già eliminata"
+        });
+        return;
+      }
+
+      res.json({
+        message:
+          `Carta ${carta.circuito} •••• ${carta.ultime_quattro} eliminata correttamente`,
+        id_carta: idCarta
+      });
+    });
+  });
+});
 app.post("/api/portafoglio/ricarica", (req, res) => {
   const { id_utente, id_carta, importo } = req.body;
 

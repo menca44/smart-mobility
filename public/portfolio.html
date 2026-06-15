@@ -478,6 +478,36 @@
       line-height: 1.4;
     }
 
+    .card-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 14px;
+    }
+
+    .delete-card-btn {
+      border: 1px solid #fecaca;
+      background: #fff1f2;
+      color: #b91c1c;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .delete-card-btn:hover {
+      background: #fee2e2;
+      border-color: #fca5a5;
+      transform: translateY(-1px);
+    }
+
+    .delete-card-btn:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+    }
+
     .empty {
       padding: 18px;
       border-radius: 16px;
@@ -994,7 +1024,28 @@
             <h3>${carta.circuito} •••• ${carta.ultime_quattro}</h3>
             <p>Intestatario: ${carta.intestatario}</p>
             <p>Scadenza: ${carta.scadenza}</p>
+
+            <div class="card-actions">
+              <button
+                type="button"
+                class="delete-card-btn"
+                data-id-carta="${carta.id_carta}"
+                data-descrizione="${carta.circuito} •••• ${carta.ultime_quattro}"
+              >
+                Elimina carta
+              </button>
+            </div>
           `;
+
+          const eliminaButton = item.querySelector(".delete-card-btn");
+
+          eliminaButton.addEventListener("click", function() {
+            eliminaCarta(
+              carta.id_carta,
+              `${carta.circuito} •••• ${carta.ultime_quattro}`,
+              eliminaButton
+            );
+          });
 
           listaCarte.appendChild(item);
         });
@@ -1006,6 +1057,58 @@
             Errore nel caricamento delle carte.
           </div>
         `;
+      }
+    }
+
+    async function eliminaCarta(idCarta, descrizioneCarta, pulsante) {
+      const conferma = window.confirm(
+        `Vuoi eliminare la carta ${descrizioneCarta}?\n\n` +
+        "Lo storico delle ricariche già effettuate resterà disponibile."
+      );
+
+      if (!conferma) {
+        return;
+      }
+
+      const testoOriginale = pulsante.textContent;
+      pulsante.disabled = true;
+      pulsante.textContent = "Eliminazione...";
+
+      try {
+        const response = await fetch(`/api/carte/${idCarta}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            id_utente: ID_UTENTE_CORRENTE
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || "Errore durante l'eliminazione della carta.");
+        }
+
+        mostraMessaggio(
+          "cartaMessage",
+          result.message || "Carta eliminata correttamente.",
+          "success"
+        );
+
+        await caricaCarte();
+      } catch (error) {
+        console.error("Errore eliminazione carta:", error);
+
+        mostraMessaggio(
+          "cartaMessage",
+          error.message || "Errore di connessione con il server.",
+          "error"
+        );
+
+        pulsante.disabled = false;
+        pulsante.textContent = testoOriginale;
       }
     }
 
