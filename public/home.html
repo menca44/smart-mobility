@@ -2045,20 +2045,31 @@
       });
     }
 
-    function mostraQrMezzo(codiceQr, idMezzo) {
+   function mostraQrMezzo(codiceQr, idMezzo) {
+  const contenitore = document.getElementById("qr-" + idMezzo);
 
-  const contenitore =
-    document.getElementById("qr-" + idMezzo);
-
-  if (!contenitore) return;
+  if (!contenitore) {
+    alert("Contenitore QR non trovato.");
+    return;
+  }
 
   contenitore.innerHTML = "";
+
+  if (!codiceQr || codiceQr === "null" || codiceQr === "undefined") {
+    contenitore.innerHTML = `
+      <div style="color:#a12a2a;font-size:13px;font-weight:700;margin-top:8px;">
+        QR non disponibile per questo mezzo.
+      </div>
+    `;
+    return;
+  }
 
   new QRCode(contenitore, {
     text: codiceQr,
     width: 150,
     height: 150
   });
+}
 
 }
 
