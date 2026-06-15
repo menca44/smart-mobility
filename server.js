@@ -124,18 +124,20 @@ app.get("/", (req, res) => {
 // Endpoint di debug per controllare i mezzi.
 app.get("/api/mezzi-debug", (req, res) => {
   const sql = `
-    SELECT
-      id_mezzo,
-      tipo,
-      modello,
-      stato,
-      batteria,
-      latitudine,
-      longitudine,
-      tariffa_minuto,
-      area
-    FROM mezzi
-  `;
+    const sql = `
+  SELECT
+    id_mezzo,
+    tipo,
+    modello,
+    stato,
+    batteria,
+    latitudine,
+    longitudine,
+    tariffa_minuto,
+    area,
+    codice_qr
+  FROM mezzi
+`;
 
   db.query(sql, (err, rows) => {
     if (err) {
