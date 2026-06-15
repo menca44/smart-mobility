@@ -10,6 +10,15 @@
 
   <title>MoveLanDs - Sblocco mezzo</title>
 
+  <!--
+    Libreria che permette di usare realmente la fotocamera
+    per leggere il codice QR.
+  -->
+  <script
+    src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"
+    defer
+  ></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -73,9 +82,6 @@
 
       border-bottom: 1px solid rgba(220, 232, 226, 0.9);
       box-shadow: 0 8px 24px rgba(17, 45, 35, 0.05);
-
-      position: relative;
-      z-index: 1000;
     }
 
     .brand {
@@ -252,13 +258,7 @@
       padding: 22px;
       border-radius: 22px;
 
-      background:
-        linear-gradient(
-          135deg,
-          #effaf5,
-          #f7fcfa
-        );
-
+      background: linear-gradient(135deg, #effaf5, #f7fcfa);
       border: 1px solid var(--bordo);
     }
 
@@ -289,6 +289,7 @@
     .vehicle-header h2 {
       margin: 0 0 5px;
       font-size: 22px;
+      text-transform: capitalize;
     }
 
     .vehicle-header p {
@@ -396,34 +397,80 @@
       line-height: 1.5;
     }
 
-    .scanner-wrapper {
-      position: relative;
+    /*
+      Contenitore nel quale html5-qrcode
+      inserisce automaticamente il video della fotocamera.
+    */
+    .reader-wrapper {
       width: 100%;
       overflow: hidden;
 
       border-radius: 24px;
       background: #101815;
       border: 1px solid #253d34;
-      aspect-ratio: 4 / 3;
     }
 
-    #cameraVideo {
-      display: block;
+    #qr-reader {
       width: 100%;
-      height: 100%;
+      min-height: 360px;
+      background: #101815;
+      color: white;
+    }
+
+    /*
+      Personalizzazione degli elementi generati
+      automaticamente dalla libreria.
+    */
+    #qr-reader video {
+      width: 100% !important;
+      border-radius: 20px;
       object-fit: cover;
     }
 
+    #qr-reader img {
+      max-width: 80px;
+    }
+
+    #qr-reader button,
+    #qr-reader select {
+      margin: 8px;
+      padding: 11px 14px;
+
+      border: none;
+      border-radius: 12px;
+
+      background: var(--verde);
+      color: white;
+
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    #qr-reader select {
+      max-width: calc(100% - 20px);
+      background: white;
+      color: var(--testo);
+      border: 1px solid var(--bordo);
+    }
+
+    #qr-reader a {
+      color: #9ff4cf;
+    }
+
+    #qr-reader__dashboard_section_csr span {
+      color: white;
+    }
+
     .scanner-placeholder {
-      width: 100%;
-      height: 100%;
+      min-height: 360px;
+      padding: 35px;
 
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
 
-      padding: 30px;
       text-align: center;
       color: white;
     }
@@ -440,59 +487,6 @@
       color: #d8e3de;
       line-height: 1.5;
       font-size: 14px;
-    }
-
-    .scanner-overlay {
-      position: absolute;
-      inset: 0;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      pointer-events: none;
-    }
-
-    .scanner-frame {
-      width: min(250px, 68%);
-      aspect-ratio: 1;
-
-      border: 3px solid white;
-      border-radius: 24px;
-
-      box-shadow:
-        0 0 0 999px rgba(0, 0, 0, 0.38),
-        0 0 30px rgba(7, 150, 105, 0.68);
-
-      position: relative;
-    }
-
-    .scanner-line {
-      position: absolute;
-      left: 8%;
-      right: 8%;
-      top: 12%;
-
-      height: 3px;
-      border-radius: 999px;
-      background: #25e59b;
-
-      box-shadow: 0 0 14px #25e59b;
-      animation: scansione 2s infinite ease-in-out;
-    }
-
-    @keyframes scansione {
-      0% {
-        top: 12%;
-      }
-
-      50% {
-        top: 86%;
-      }
-
-      100% {
-        top: 12%;
-      }
     }
 
     .actions {
@@ -730,6 +724,11 @@
       .manual-row .btn {
         width: 100%;
       }
+
+      #qr-reader,
+      .scanner-placeholder {
+        min-height: 300px;
+      }
     }
   </style>
 </head>
@@ -772,9 +771,9 @@
       </h1>
 
       <p>
-        Controlla che il mezzo mostrato corrisponda a quello prenotato.
-        Successivamente avvia la fotocamera e inquadra il codice QR
-        applicato sul veicolo.
+        Controlla che il mezzo mostrato corrisponda a quello
+        prenotato, autorizza l’accesso alla fotocamera e inquadra
+        il QR code applicato sul veicolo.
       </p>
     </section>
 
@@ -807,9 +806,8 @@
             <h3>Inquadra il QR code presente sul mezzo</h3>
 
             <p>
-              Il codice viene confrontato con quello associato
-              al veicolo prenotato. Il mezzo viene sbloccato
-              solamente in caso di corrispondenza.
+              Il codice letto dalla fotocamera viene confrontato
+              con quello associato al mezzo prenotato.
             </p>
           </div>
         </div>
@@ -817,15 +815,12 @@
         <div id="messaggioPagina" class="message"></div>
 
         <div id="areaSblocco">
-          <div class="scanner-wrapper">
-            <video
-              id="cameraVideo"
-              autoplay
-              playsinline
-              muted
-              hidden
-            ></video>
 
+          <div class="reader-wrapper">
+
+            <!--
+              Prima dell'avvio viene mostrato questo messaggio.
+            -->
             <div
               id="scannerPlaceholder"
               class="scanner-placeholder"
@@ -833,20 +828,19 @@
               <span>📷</span>
 
               <p>
-                Premi “Avvia fotocamera”, autorizza l’accesso
-                e posiziona il codice QR all’interno del riquadro.
+                Premi “Avvia fotocamera”, consenti l’accesso
+                alla videocamera e inquadra il codice QR.
               </p>
             </div>
 
+            <!--
+              La libreria inserirà qui il video reale
+              proveniente dalla fotocamera.
+            -->
             <div
-              id="scannerOverlay"
-              class="scanner-overlay"
-              hidden
-            >
-              <div class="scanner-frame">
-                <div class="scanner-line"></div>
-              </div>
-            </div>
+              id="qr-reader"
+              style="display: none;"
+            ></div>
           </div>
 
           <div class="actions">
@@ -872,9 +866,8 @@
             <h3>Codice manuale</h3>
 
             <p>
-              Usa questa opzione se la fotocamera non è disponibile
-              oppure se il browser non supporta la lettura automatica
-              dei codici QR.
+              Usa questa opzione nel caso in cui la fotocamera
+              non sia disponibile oppure il QR non venga letto.
             </p>
 
             <div class="manual-row">
@@ -920,69 +913,77 @@
   </main>
 
   <script>
-    // Dati dell'utente collegato.
+    // Informazioni dell'utente autenticato.
     let utenteCorrente = null;
     let idUtenteCorrente = null;
 
-    // Dati della prenotazione e del mezzo.
+    // Informazioni della prenotazione.
     let prenotazioneCorrente = null;
     let idPrenotazioneCorrente = null;
 
-    // Gestione della fotocamera e della scansione.
-    let streamFotocamera = null;
-    let intervalloScansione = null;
-    let scannerInEsecuzione = false;
+    // Oggetto che gestisce la fotocamera.
+    let lettoreQr = null;
 
-    /*
-      Mostra un messaggio nella pagina.
-      Il tipo può essere "success" oppure "error".
-    */
+    // Indica se la fotocamera è attualmente attiva.
+    let fotocameraAttiva = false;
+
+    // Impedisce che lo stesso QR venga elaborato più volte.
+    let scansioneInElaborazione = false;
+
     function mostraMessaggio(testo, tipo) {
-      const elemento = document.getElementById("messaggioPagina");
+      const elemento =
+        document.getElementById("messaggioPagina");
 
       elemento.textContent = testo;
       elemento.className = "message " + tipo;
     }
 
-    /*
-      Nasconde il messaggio precedentemente visualizzato.
-    */
     function nascondiMessaggio() {
-      const elemento = document.getElementById("messaggioPagina");
+      const elemento =
+        document.getElementById("messaggioPagina");
 
       elemento.textContent = "";
       elemento.className = "message";
     }
 
-    /*
-      Controlla che l'utente abbia effettuato il login.
-    */
     function controllaLogin() {
-      const utenteSalvato = localStorage.getItem("movelands_utente");
+      const utenteSalvato =
+        localStorage.getItem("movelands_utente");
 
       if (!utenteSalvato) {
-        alert("Devi effettuare il login per sbloccare un mezzo.");
+        alert(
+          "Devi effettuare il login per sbloccare un mezzo."
+        );
+
         window.location.href = "index.html";
         return false;
       }
 
       try {
-        utenteCorrente = JSON.parse(utenteSalvato);
+        utenteCorrente =
+          JSON.parse(utenteSalvato);
       } catch (error) {
-        localStorage.removeItem("movelands_utente");
+        localStorage.removeItem(
+          "movelands_utente"
+        );
 
-        alert("Sessione non valida. Effettua nuovamente il login.");
+        alert(
+          "Sessione non valida. Effettua nuovamente il login."
+        );
+
         window.location.href = "index.html";
         return false;
       }
 
-      idUtenteCorrente = Number(utenteCorrente.id_utente);
+      idUtenteCorrente =
+        Number(utenteCorrente.id_utente);
 
       if (
         !Number.isInteger(idUtenteCorrente) ||
         idUtenteCorrente <= 0
       ) {
         alert("Sessione utente non valida.");
+
         window.location.href = "index.html";
         return false;
       }
@@ -990,17 +991,21 @@
       return true;
     }
 
-    /*
-      Recupera l'id della prenotazione dall'indirizzo della pagina.
-
-      Sono accettati indirizzi come:
-      sblocco-mezzo.html?id_prenotazione=12
-    */
     function recuperaIdPrenotazioneDaUrl() {
-      const parametri = new URLSearchParams(window.location.search);
-      const valore = Number(parametri.get("id_prenotazione"));
+      const parametri =
+        new URLSearchParams(
+          window.location.search
+        );
 
-      if (Number.isInteger(valore) && valore > 0) {
+      const valore =
+        Number(
+          parametri.get("id_prenotazione")
+        );
+
+      if (
+        Number.isInteger(valore) &&
+        valore > 0
+      ) {
         idPrenotazioneCorrente = valore;
         return true;
       }
@@ -1008,50 +1013,68 @@
       return false;
     }
 
-    /*
-      Sceglie l'icona in base al tipo di mezzo.
-    */
     function scegliIconaMezzo(tipo) {
-      const tipoNormalizzato = String(tipo || "")
-        .trim()
-        .toLowerCase();
+      const tipoNormalizzato =
+        String(tipo || "")
+          .trim()
+          .toLowerCase();
 
-      if (tipoNormalizzato.includes("bicicletta")) {
+      if (
+        tipoNormalizzato.includes(
+          "bicicletta"
+        )
+      ) {
         return "🚲";
       }
 
-      if (tipoNormalizzato.includes("monopattino")) {
+      if (
+        tipoNormalizzato.includes(
+          "monopattino"
+        )
+      ) {
         return "🛴";
       }
 
-      if (tipoNormalizzato.includes("scooter")) {
+      if (
+        tipoNormalizzato.includes(
+          "scooter"
+        )
+      ) {
         return "🛵";
       }
 
-      if (tipoNormalizzato.includes("auto")) {
+      if (
+        tipoNormalizzato.includes("auto")
+      ) {
         return "🚗";
       }
 
       return "🚘";
     }
 
-    /*
-      Visualizza nella colonna sinistra il mezzo prenotato.
-    */
-    function renderizzaPrenotazione(prenotazione) {
-      const container = document.getElementById("veicoloContainer");
+    function renderizzaPrenotazione(
+      prenotazione
+    ) {
+      const container =
+        document.getElementById(
+          "veicoloContainer"
+        );
 
-      const statoSblocco = String(
-        prenotazione.stato_sblocco || "bloccato"
-      )
-        .trim()
-        .toLowerCase();
+      const statoSblocco =
+        String(
+          prenotazione.stato_sblocco ||
+          "bloccato"
+        )
+          .trim()
+          .toLowerCase();
 
       container.innerHTML = `
         <div class="vehicle-card">
           <div class="vehicle-header">
             <div class="vehicle-icon">
-              ${scegliIconaMezzo(prenotazione.tipo)}
+              ${scegliIconaMezzo(
+                prenotazione.tipo
+              )}
             </div>
 
             <div>
@@ -1061,7 +1084,8 @@
               </h2>
 
               <p>
-                Prenotazione #${prenotazione.id_prenotazione}
+                Prenotazione
+                #${prenotazione.id_prenotazione}
               </p>
             </div>
           </div>
@@ -1069,12 +1093,16 @@
           <div class="vehicle-info">
             <div class="vehicle-row">
               <span>Numero mezzo</span>
-              <strong>#${prenotazione.id_mezzo}</strong>
+              <strong>
+                #${prenotazione.id_mezzo}
+              </strong>
             </div>
 
             <div class="vehicle-row">
               <span>Zona</span>
-              <strong>${prenotazione.area || "Non indicata"}</strong>
+              <strong>
+                ${prenotazione.area || "Non indicata"}
+              </strong>
             </div>
 
             <div class="vehicle-row">
@@ -1092,19 +1120,25 @@
             <div class="vehicle-row">
               <span>Tariffa</span>
               <strong>
-                €${Number(prenotazione.tariffa_minuto || 0).toFixed(2)}/min
+                €${Number(
+                  prenotazione.tariffa_minuto || 0
+                ).toFixed(2)}/min
               </strong>
             </div>
 
             <div class="vehicle-row">
-              <span>Stato prenotazione</span>
-              <strong>${prenotazione.stato_prenotazione}</strong>
+              <span>Stato</span>
+              <strong>
+                ${prenotazione.stato_prenotazione}
+              </strong>
             </div>
           </div>
 
           <div
             class="status-box ${
-              statoSblocco === "sbloccato" ? "success" : ""
+              statoSblocco === "sbloccato"
+                ? "success"
+                : ""
             }"
           >
             ${
@@ -1116,22 +1150,21 @@
         </div>
       `;
 
-      if (statoSblocco === "sbloccato") {
+      if (
+        statoSblocco === "sbloccato"
+      ) {
         mostraPannelloSuccesso();
       }
     }
 
-    /*
-      Recupera una prenotazione specifica quando nell'URL
-      è presente id_prenotazione.
-    */
     async function caricaPrenotazioneSpecifica() {
       const response = await fetch(
         `/api/prenotazioni/${idPrenotazioneCorrente}/sblocco` +
         `?id_utente=${idUtenteCorrente}`
       );
 
-      const result = await response.json();
+      const result =
+        await response.json();
 
       if (!response.ok) {
         throw new Error(
@@ -1143,19 +1176,13 @@
       prenotazioneCorrente = result;
     }
 
-    /*
-      Se nell'URL non è presente id_prenotazione,
-      recupera la prenotazione attiva dell'utente.
-
-      Il server attuale restituisce un array di prenotazioni attive.
-      Viene utilizzata la prima, cioè quella più recente.
-    */
     async function caricaPrenotazioneAttiva() {
       const response = await fetch(
         `/api/prenotazioni/utente/${idUtenteCorrente}`
       );
 
-      const result = await response.json();
+      const result =
+        await response.json();
 
       if (!response.ok) {
         throw new Error(
@@ -1164,67 +1191,84 @@
         );
       }
 
-      if (!Array.isArray(result) || result.length === 0) {
+      if (
+        !Array.isArray(result) ||
+        result.length === 0
+      ) {
         throw new Error(
           "Non hai nessun mezzo prenotato da sbloccare."
         );
       }
 
       prenotazioneCorrente = result[0];
+
       idPrenotazioneCorrente =
-        Number(prenotazioneCorrente.id_prenotazione);
+        Number(
+          prenotazioneCorrente
+            .id_prenotazione
+        );
     }
 
-    /*
-      Carica la prenotazione.
-
-      Prima prova a usare l'id presente nell'URL.
-      Se non è presente, recupera automaticamente
-      la prenotazione attiva dell'utente.
-    */
     async function caricaPrenotazione() {
       try {
-        if (recuperaIdPrenotazioneDaUrl()) {
+        if (
+          recuperaIdPrenotazioneDaUrl()
+        ) {
           await caricaPrenotazioneSpecifica();
         } else {
           await caricaPrenotazioneAttiva();
         }
 
-        renderizzaPrenotazione(prenotazioneCorrente);
+        renderizzaPrenotazione(
+          prenotazioneCorrente
+        );
       } catch (error) {
         console.error(
           "Errore caricamento prenotazione:",
           error
         );
 
-        document.getElementById("veicoloContainer").innerHTML = `
+        document.getElementById(
+          "veicoloContainer"
+        ).innerHTML = `
           <div class="loading-box">
-            <span class="loading-icon">⚠️</span>
+            <span class="loading-icon">
+              ⚠️
+            </span>
+
             ${error.message}
           </div>
         `;
 
-        mostraMessaggio(error.message, "error");
+        mostraMessaggio(
+          error.message,
+          "error"
+        );
 
-        document.getElementById("avviaCameraBtn").disabled = true;
-        document.getElementById("sbloccaManualeBtn").disabled = true;
+        document.getElementById(
+          "avviaCameraBtn"
+        ).disabled = true;
+
+        document.getElementById(
+          "sbloccaManualeBtn"
+        ).disabled = true;
       }
     }
 
-    /*
-      Invia il codice QR al server.
-
-      Il server controlla che il codice appartenga
-      esattamente al mezzo della prenotazione.
-    */
     async function sbloccaMezzo(codiceQr) {
-      const codicePulito = String(codiceQr || "").trim();
+      const codicePulito =
+        String(codiceQr || "").trim();
 
-      if (!prenotazioneCorrente || !idPrenotazioneCorrente) {
+      if (
+        !prenotazioneCorrente ||
+        !idPrenotazioneCorrente
+      ) {
         mostraMessaggio(
           "Nessuna prenotazione valida trovata.",
           "error"
         );
+
+        scansioneInElaborazione = false;
         return;
       }
 
@@ -1233,6 +1277,8 @@
           "Inquadra un QR code oppure inserisci il codice manualmente.",
           "error"
         );
+
+        scansioneInElaborazione = false;
         return;
       }
 
@@ -1245,17 +1291,22 @@
             method: "POST",
 
             headers: {
-              "Content-Type": "application/json"
+              "Content-Type":
+                "application/json"
             },
 
             body: JSON.stringify({
-              id_utente: idUtenteCorrente,
-              codice_qr: codicePulito
+              id_utente:
+                idUtenteCorrente,
+
+              codice_qr:
+                codicePulito
             })
           }
         );
 
-        const result = await response.json();
+        const result =
+          await response.json();
 
         if (!response.ok) {
           throw new Error(
@@ -1264,38 +1315,82 @@
           );
         }
 
-        fermaFotocamera();
-        mostraPannelloSuccesso(result);
+        await fermaFotocamera();
+
+        mostraPannelloSuccesso(
+          result
+        );
       } catch (error) {
-        console.error("Errore sblocco mezzo:", error);
-        mostraMessaggio(error.message, "error");
+        console.error(
+          "Errore sblocco mezzo:",
+          error
+        );
+
+        mostraMessaggio(
+          error.message,
+          "error"
+        );
+
+        /*
+          Se il QR era errato, permetto
+          di effettuare una nuova scansione.
+        */
+        scansioneInElaborazione = false;
       }
     }
 
-    /*
-      Nasconde lo scanner e mostra il messaggio
-      di sblocco avvenuto correttamente.
-    */
-    function mostraPannelloSuccesso(result = null) {
-      document.getElementById("areaSblocco").style.display = "none";
+    function mostraPannelloSuccesso(
+      result = null
+    ) {
+      document.getElementById(
+        "areaSblocco"
+      ).style.display = "none";
 
-      document
-        .getElementById("pannelloSuccesso")
-        .classList.add("active");
+      document.getElementById(
+        "pannelloSuccesso"
+      ).classList.add("active");
 
       if (result) {
-        document.getElementById("testoSuccesso").textContent =
-          `${result.tipo || "Mezzo"} ${result.modello || ""} ` +
+        document.getElementById(
+          "testoSuccesso"
+        ).textContent =
+          `${result.tipo || "Mezzo"} ` +
+          `${result.modello || ""} ` +
           "sbloccato correttamente. Puoi iniziare la corsa.";
       }
     }
 
     /*
-      Avvia la fotocamera posteriore del dispositivo.
-
-      BarcodeDetector non è disponibile su tutti i browser.
-      Per questo rimane disponibile anche il codice manuale.
+      Questa funzione viene chiamata automaticamente
+      quando la fotocamera riconosce un codice QR.
     */
+    async function qrLettoCorrettamente(
+      testoDecodificato
+    ) {
+      if (scansioneInElaborazione) {
+        return;
+      }
+
+      scansioneInElaborazione = true;
+
+      mostraMessaggio(
+        "QR code rilevato. Verifica del mezzo in corso...",
+        "success"
+      );
+
+      await sbloccaMezzo(
+        testoDecodificato
+      );
+    }
+
+    /*
+      Gli errori di lettura durante l'inquadratura
+      sono normali e non vengono mostrati all'utente.
+    */
+    function erroreLetturaQr() {
+      // Nessuna operazione necessaria.
+    }
+
     async function avviaFotocamera() {
       nascondiMessaggio();
 
@@ -1304,208 +1399,287 @@
           "Attendi il caricamento del mezzo prenotato.",
           "error"
         );
+
         return;
       }
 
-      if (!navigator.mediaDevices?.getUserMedia) {
+      if (
+        typeof Html5Qrcode ===
+        "undefined"
+      ) {
         mostraMessaggio(
-          "Il browser non consente l'accesso alla fotocamera. Usa il codice manuale.",
+          "Il lettore QR non è stato caricato. Controlla la connessione a Internet e ricarica la pagina.",
           "error"
         );
+
         return;
       }
 
-      if (!("BarcodeDetector" in window)) {
-        mostraMessaggio(
-          "La scansione automatica dei QR non è supportata da questo browser. Usa Chrome su Android oppure inserisci il codice manualmente.",
-          "error"
-        );
+      if (fotocameraAttiva) {
         return;
       }
+
+      scansioneInElaborazione = false;
+
+      const placeholder =
+        document.getElementById(
+          "scannerPlaceholder"
+        );
+
+      const reader =
+        document.getElementById(
+          "qr-reader"
+        );
+
+      placeholder.style.display = "none";
+      reader.style.display = "block";
 
       try {
-        const formatiSupportati =
-          await BarcodeDetector.getSupportedFormats();
+        /*
+          Creo il lettore limitandolo
+          ai soli codici QR.
+        */
+        lettoreQr = new Html5Qrcode(
+          "qr-reader",
+          {
+            formatsToSupport: [
+              Html5QrcodeSupportedFormats.QR_CODE
+            ],
 
-        if (!formatiSupportati.includes("qr_code")) {
-          throw new Error(
-            "La lettura dei codici QR non è supportata."
-          );
-        }
+            verbose: false
+          }
+        );
 
-        streamFotocamera =
-          await navigator.mediaDevices.getUserMedia({
-            video: {
-              facingMode: {
-                ideal: "environment"
-              }
-            },
+        const configurazioneScanner = {
+          fps: 10,
 
-            audio: false
-          });
-
-        const video =
-          document.getElementById("cameraVideo");
-
-        video.srcObject = streamFotocamera;
-        video.hidden = false;
-
-        document
-          .getElementById("scannerPlaceholder")
-          .hidden = true;
-
-        document
-          .getElementById("scannerOverlay")
-          .hidden = false;
-
-        document
-          .getElementById("avviaCameraBtn")
-          .disabled = true;
-
-        document
-          .getElementById("fermaCameraBtn")
-          .disabled = false;
-
-        await video.play();
-
-        scannerInEsecuzione = true;
-
-        const detector = new BarcodeDetector({
-          formats: ["qr_code"]
-        });
-
-        intervalloScansione = setInterval(async () => {
-          if (
-            !scannerInEsecuzione ||
-            video.readyState < 2
+          qrbox: function(
+            larghezzaVideo,
+            altezzaVideo
           ) {
-            return;
-          }
+            const latoMinimo =
+              Math.min(
+                larghezzaVideo,
+                altezzaVideo
+              );
 
-          try {
-            const codici = await detector.detect(video);
+            const latoQuadrato =
+              Math.floor(
+                latoMinimo * 0.68
+              );
 
-            if (codici.length > 0) {
-              const codiceLetto =
-                codici[0].rawValue;
+            return {
+              width: latoQuadrato,
+              height: latoQuadrato
+            };
+          },
 
-              scannerInEsecuzione = false;
+          aspectRatio: 1.333334,
 
-              clearInterval(intervalloScansione);
-              intervalloScansione = null;
+          disableFlip: false
+        };
 
-              await sbloccaMezzo(codiceLetto);
+        /*
+          Preferisco la fotocamera posteriore,
+          normalmente usata per inquadrare il QR.
+        */
+        await lettoreQr.start(
+          {
+            facingMode: {
+              ideal: "environment"
             }
-          } catch (error) {
-            console.error(
-              "Errore durante la lettura del QR:",
-              error
-            );
-          }
-        }, 600);
+          },
+
+          configurazioneScanner,
+
+          qrLettoCorrettamente,
+
+          erroreLetturaQr
+        );
+
+        fotocameraAttiva = true;
+
+        document.getElementById(
+          "avviaCameraBtn"
+        ).disabled = true;
+
+        document.getElementById(
+          "fermaCameraBtn"
+        ).disabled = false;
+
+        mostraMessaggio(
+          "Fotocamera attiva. Inquadra il QR code del mezzo.",
+          "success"
+        );
       } catch (error) {
         console.error(
           "Errore avvio fotocamera:",
           error
         );
 
+        reader.style.display = "none";
+        placeholder.style.display = "flex";
+
+        lettoreQr = null;
+        fotocameraAttiva = false;
+
+        document.getElementById(
+          "avviaCameraBtn"
+        ).disabled = false;
+
+        document.getElementById(
+          "fermaCameraBtn"
+        ).disabled = true;
+
+        let messaggio =
+          "Non è stato possibile avviare la fotocamera.";
+
+        const nomeErrore =
+          String(error?.name || "");
+
+        if (
+          nomeErrore ===
+          "NotAllowedError"
+        ) {
+          messaggio =
+            "Permesso fotocamera negato. Apri le impostazioni del browser e consenti l’uso della fotocamera per questo sito.";
+        } else if (
+          nomeErrore ===
+          "NotFoundError"
+        ) {
+          messaggio =
+            "Nessuna fotocamera disponibile sul dispositivo.";
+        } else if (
+          nomeErrore ===
+          "NotReadableError"
+        ) {
+          messaggio =
+            "La fotocamera è già utilizzata da un’altra applicazione.";
+        }
+
         mostraMessaggio(
-          "Impossibile avviare la fotocamera. Controlla i permessi oppure usa il codice manuale.",
+          messaggio,
           "error"
         );
-
-        fermaFotocamera();
       }
     }
 
-    /*
-      Ferma completamente la fotocamera
-      e libera le risorse del dispositivo.
-    */
-    function fermaFotocamera() {
-      scannerInEsecuzione = false;
-
-      if (intervalloScansione) {
-        clearInterval(intervalloScansione);
-        intervalloScansione = null;
+    async function fermaFotocamera() {
+      if (!lettoreQr) {
+        ripristinaAreaScanner();
+        return;
       }
 
-      if (streamFotocamera) {
-        streamFotocamera
-          .getTracks()
-          .forEach((traccia) => traccia.stop());
-
-        streamFotocamera = null;
-      }
-
-      const video =
-        document.getElementById("cameraVideo");
-
-      video.srcObject = null;
-      video.hidden = true;
-
-      document
-        .getElementById("scannerPlaceholder")
-        .hidden = false;
-
-      document
-        .getElementById("scannerOverlay")
-        .hidden = true;
-
-      document
-        .getElementById("avviaCameraBtn")
-        .disabled = false;
-
-      document
-        .getElementById("fermaCameraBtn")
-        .disabled = true;
-    }
-
-    // Avvio della fotocamera.
-    document
-      .getElementById("avviaCameraBtn")
-      .addEventListener(
-        "click",
-        avviaFotocamera
-      );
-
-    // Arresto della fotocamera.
-    document
-      .getElementById("fermaCameraBtn")
-      .addEventListener(
-        "click",
-        fermaFotocamera
-      );
-
-    // Sblocco tramite codice inserito manualmente.
-    document
-      .getElementById("sbloccaManualeBtn")
-      .addEventListener("click", () => {
-        const codice =
-          document.getElementById("codiceManuale").value;
-
-        sbloccaMezzo(codice);
-      });
-
-    // Permette di inviare il codice anche premendo Invio.
-    document
-      .getElementById("codiceManuale")
-      .addEventListener("keydown", (event) => {
-        if (event.key === "Enter") {
-          sbloccaMezzo(event.target.value);
+      try {
+        if (fotocameraAttiva) {
+          await lettoreQr.stop();
         }
-      });
 
-    // La fotocamera viene fermata uscendo dalla pagina.
-    window.addEventListener(
-      "beforeunload",
+        await lettoreQr.clear();
+      } catch (error) {
+        console.warn(
+          "Errore durante la chiusura della fotocamera:",
+          error
+        );
+      }
+
+      lettoreQr = null;
+      fotocameraAttiva = false;
+      scansioneInElaborazione = false;
+
+      ripristinaAreaScanner();
+    }
+
+    function ripristinaAreaScanner() {
+      const placeholder =
+        document.getElementById(
+          "scannerPlaceholder"
+        );
+
+      const reader =
+        document.getElementById(
+          "qr-reader"
+        );
+
+      reader.innerHTML = "";
+      reader.style.display = "none";
+      placeholder.style.display = "flex";
+
+      document.getElementById(
+        "avviaCameraBtn"
+      ).disabled = false;
+
+      document.getElementById(
+        "fermaCameraBtn"
+      ).disabled = true;
+    }
+
+    document.getElementById(
+      "avviaCameraBtn"
+    ).addEventListener(
+      "click",
+      avviaFotocamera
+    );
+
+    document.getElementById(
+      "fermaCameraBtn"
+    ).addEventListener(
+      "click",
       fermaFotocamera
     );
 
-    // Avvio della pagina.
-    if (controllaLogin()) {
-      caricaPrenotazione();
-    }
+    document.getElementById(
+      "sbloccaManualeBtn"
+    ).addEventListener(
+      "click",
+      () => {
+        const codice =
+          document.getElementById(
+            "codiceManuale"
+          ).value;
+
+        sbloccaMezzo(codice);
+      }
+    );
+
+    document.getElementById(
+      "codiceManuale"
+    ).addEventListener(
+      "keydown",
+      (event) => {
+        if (event.key === "Enter") {
+          sbloccaMezzo(
+            event.target.value
+          );
+        }
+      }
+    );
+
+    window.addEventListener(
+      "beforeunload",
+      () => {
+        if (
+          lettoreQr &&
+          fotocameraAttiva
+        ) {
+          lettoreQr.stop()
+            .catch(() => {});
+        }
+      }
+    );
+
+    /*
+      Aspetto che siano caricati sia la pagina
+      sia la libreria html5-qrcode.
+    */
+    window.addEventListener(
+      "load",
+      () => {
+        if (controllaLogin()) {
+          caricaPrenotazione();
+        }
+      }
+    );
   </script>
 
 </body>
