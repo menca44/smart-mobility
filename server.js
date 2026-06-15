@@ -115,18 +115,17 @@ app.get("/", (req, res) => {
 app.get("/api/mezzi", (req, res) => {
   const sql = `
     SELECT
-      id_mezzo,
-      tipo,
-      modello,
-      stato,
-      batteria,
-      latitudine,
-      longitudine,
-      tariffa_minuto,
-      area
-    FROM mezzi
-    ORDER BY id_mezzo ASC
-  `;
+  id_mezzo,
+  tipo,
+  modello,
+  stato,
+  batteria,
+  latitudine,
+  longitudine,
+  tariffa_minuto,
+  area,
+  codice_qr
+FROM mezzi
 
   db.query(sql, (error, rows) => {
     if (error) {
