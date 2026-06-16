@@ -9,6 +9,11 @@
   >
 
   <title>MoveLanDs - Sblocco mezzo</title>
+  <!-- Stile della mappa Leaflet. -->
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+>
 
   <!-- Libreria per la scansione reale dei codici QR tramite fotocamera. -->
   <script
@@ -1051,6 +1056,170 @@
   font-size: 14px;
   font-weight: 900;
 }
+/* =====================================================
+   SCELTA DESTINAZIONE E PERCORSO
+   ===================================================== */
+
+.destination-section {
+  display: none;
+  margin-top: 24px;
+  padding: 22px;
+
+  border-radius: 22px;
+  background: #ffffff;
+  border: 1px solid var(--bordo);
+
+  text-align: left;
+}
+
+.destination-section.active {
+  display: block;
+}
+
+.destination-header {
+  margin-bottom: 16px;
+}
+
+.destination-header h3 {
+  margin: 0 0 7px;
+
+  color: var(--testo);
+  font-size: 20px;
+}
+
+.destination-header p {
+  margin: 0;
+
+  color: var(--grigio);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.destination-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+
+  margin-bottom: 14px;
+}
+
+.destination-form input {
+  width: 100%;
+  padding: 14px 15px;
+
+  border: 1px solid var(--bordo);
+  border-radius: 14px;
+
+  background: #fbfdfc;
+  color: var(--testo);
+
+  font-size: 14px;
+  outline: none;
+}
+
+.destination-form input:focus {
+  border-color: var(--verde);
+  box-shadow: 0 0 0 3px rgba(7, 150, 105, 0.12);
+}
+
+.destination-form button {
+  width: auto;
+  min-width: 155px;
+}
+
+.destination-message {
+  display: none;
+  margin-bottom: 14px;
+  padding: 13px;
+
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.destination-message.info {
+  display: block;
+  background: #eff6ff;
+  color: #1d4f91;
+  border: 1px solid #bfdbfe;
+}
+
+.destination-message.success {
+  display: block;
+  background: #e8f8ef;
+  color: #176b46;
+  border: 1px solid #bfe8cf;
+}
+
+.destination-message.error {
+  display: block;
+  background: #fff1f1;
+  color: #a12a2a;
+  border: 1px solid #f2c2c2;
+}
+
+#routeMap {
+  width: 100%;
+  height: 390px;
+
+  border-radius: 18px;
+  border: 1px solid var(--bordo);
+
+  overflow: hidden;
+}
+
+.route-summary {
+  display: none;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  margin-top: 14px;
+}
+
+.route-summary.active {
+  display: grid;
+}
+
+.route-summary-card {
+  padding: 14px;
+
+  border-radius: 15px;
+  background: #f7fbf9;
+  border: 1px solid var(--bordo);
+
+  text-align: center;
+}
+
+.route-summary-card span {
+  display: block;
+  margin-bottom: 5px;
+
+  color: var(--grigio);
+  font-size: 12px;
+}
+
+.route-summary-card strong {
+  color: var(--testo);
+  font-size: 18px;
+}
+
+.remove-route-btn {
+  display: none;
+  margin-top: 12px;
+
+  background: #ffffff;
+  color: var(--rosso);
+  border: 1px solid #e5a8a8;
+}
+
+.remove-route-btn.active {
+  display: block;
+}
+
+.remove-route-btn:hover {
+  background: var(--rosso);
+  color: #ffffff;
+}
 
     @media (max-width: 850px) {
       .layout {
@@ -1067,6 +1236,22 @@
     }
 
     @media (max-width: 560px) {
+    .destination-form {
+  grid-template-columns: 1fr;
+}
+
+.destination-form button {
+  width: 100%;
+  min-width: 0;
+}
+
+#routeMap {
+  height: 320px;
+}
+
+.route-summary {
+  grid-template-columns: 1fr;
+}
     .lights-pre-unlock-area {
   flex-direction: column;
   align-items: stretch;
@@ -1234,7 +1419,14 @@
             </p>
           </div>
         </div>
-        <div class="lights-pre-unlock-area">
+        
+
+        <div id="messaggioPagina" class="message"></div>
+
+        <div id="areaSblocco">
+
+          
+          <div class="lights-pre-unlock-area">
   <div class="lights-pre-unlock-content">
     <h3>Non riesci a individuare il mezzo?</h3>
 
@@ -1252,12 +1444,6 @@
     💡 Fai lampeggiare le luci
   </button>
 </div>
-
-        <div id="messaggioPagina" class="message"></div>
-
-        <div id="areaSblocco">
-          
-
           <div class="reader-wrapper">
             <div
               id="scannerPlaceholder"
@@ -1458,13 +1644,78 @@
     </button>
 
   </div>
+  <div
+  id="destinationSection"
+  class="destination-section"
+>
+  <div class="destination-header">
+    <h3>📍 Scegli una destinazione</h3>
+
+    <p>
+      Inserisci un indirizzo o un luogo. Verrà calcolato
+      un percorso dalla posizione del mezzo fino alla meta scelta.
+    </p>
+  </div>
+
+  <div class="destination-form">
+    <input
+      id="destinationInput"
+      type="text"
+      placeholder="Es. Piazza Maria Immacolata, Taranto"
+      autocomplete="off"
+    >
+
+    <button
+      id="calculateRouteBtn"
+      class="btn btn-primary"
+      type="button"
+    >
+      Calcola percorso
+    </button>
+  </div>
+
+  <div
+    id="destinationMessage"
+    class="destination-message"
+  ></div>
+
+  <div id="routeMap"></div>
+
+  <div
+    id="routeSummary"
+    class="route-summary"
+  >
+    <div class="route-summary-card">
+      <span>Distanza stimata</span>
+      <strong id="routeDistance">
+        —
+      </strong>
+    </div>
+
+    <div class="route-summary-card">
+      <span>Durata stimata</span>
+      <strong id="routeDuration">
+        —
+      </strong>
+    </div>
+  </div>
+
+  <button
+    id="removeRouteBtn"
+    class="btn remove-route-btn"
+    type="button"
+  >
+    Rimuovi percorso
+  </button>
+</div>
   
 </div>
       </section>
 
     </section>
   </main>
-
+<!-- Libreria JavaScript per la mappa. -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     // =====================================================
     // VARIABILI GENERALI
@@ -1490,6 +1741,14 @@ const DURATA_MASSIMA_PAUSA_SECONDI =
 
 const ATTESA_NUOVA_PAUSA_SECONDI =
   15 * 60;
+  // =====================================================
+// VARIABILI DEL PERCORSO
+// =====================================================
+
+let routeMap = null;
+let routeLayer = null;
+let startMarker = null;
+let destinationMarker = null;
 
     // =====================================================
     // MESSAGGI DELLA PAGINA
@@ -1990,6 +2249,13 @@ prenotazioneCorrente.secondi_pausa_totali =
   document.getElementById(
     "pannelloSuccesso"
   ).classList.add("active");
+  document.getElementById(
+  "destinationSection"
+).classList.add(
+  "active"
+);
+
+inizializzaMappaPercorso();
 
   /*
    * Se la funzione viene chiamata subito dopo lo sblocco,
@@ -2854,6 +3120,601 @@ async function terminaCorsa() {
       "■ Termina corsa";
   }
 }
+// =====================================================
+// SCELTA DESTINAZIONE E CALCOLO PERCORSO
+// =====================================================
+
+function mostraMessaggioDestinazione(
+  testo,
+  tipo
+) {
+  const elemento =
+    document.getElementById(
+      "destinationMessage"
+    );
+
+  elemento.textContent = testo;
+
+  elemento.className =
+    "destination-message " +
+    tipo;
+}
+
+function nascondiMessaggioDestinazione() {
+  const elemento =
+    document.getElementById(
+      "destinationMessage"
+    );
+
+  elemento.textContent = "";
+
+  elemento.className =
+    "destination-message";
+}
+
+function inizializzaMappaPercorso() {
+  if (routeMap) {
+    setTimeout(() => {
+      routeMap.invalidateSize();
+    }, 200);
+
+    return true;
+  }
+
+  if (
+    typeof L === "undefined"
+  ) {
+    mostraMessaggioDestinazione(
+      "La libreria della mappa non è stata caricata.",
+      "error"
+    );
+
+    return false;
+  }
+
+  const latitudineMezzo =
+    Number(
+      prenotazioneCorrente
+        ?.latitudine
+    );
+
+  const longitudineMezzo =
+    Number(
+      prenotazioneCorrente
+        ?.longitudine
+    );
+
+  if (
+    !Number.isFinite(
+      latitudineMezzo
+    ) ||
+    !Number.isFinite(
+      longitudineMezzo
+    )
+  ) {
+    mostraMessaggioDestinazione(
+      "Le coordinate del mezzo non sono disponibili.",
+      "error"
+    );
+
+    return false;
+  }
+
+  routeMap =
+    L.map(
+      "routeMap"
+    ).setView(
+      [
+        latitudineMezzo,
+        longitudineMezzo
+      ],
+      15
+    );
+
+  L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+      maxZoom: 19,
+
+      attribution:
+        "© OpenStreetMap contributors"
+    }
+  ).addTo(routeMap);
+
+  startMarker =
+    L.marker(
+      [
+        latitudineMezzo,
+        longitudineMezzo
+      ]
+    )
+      .addTo(routeMap)
+      .bindPopup(
+        "<strong>Posizione del mezzo</strong>"
+      );
+
+  setTimeout(() => {
+    routeMap.invalidateSize();
+  }, 250);
+
+  return true;
+}
+
+async function cercaCoordinateDestinazione(
+  destinazione
+) {
+  const queryCompleta =
+    destinazione
+      .toLowerCase()
+      .includes("taranto")
+      ? destinazione
+      : destinazione +
+        ", Taranto, Italia";
+
+  const url =
+    "https://nominatim.openstreetmap.org/search" +
+    "?format=jsonv2" +
+    "&limit=1" +
+    "&countrycodes=it" +
+    "&q=" +
+    encodeURIComponent(
+      queryCompleta
+    );
+
+  const response =
+    await fetch(
+      url,
+      {
+        headers: {
+          "Accept":
+            "application/json"
+        }
+      }
+    );
+
+  if (!response.ok) {
+    throw new Error(
+      "Errore durante la ricerca della destinazione."
+    );
+  }
+
+  const risultati =
+    await response.json();
+
+  if (
+    !Array.isArray(
+      risultati
+    ) ||
+    risultati.length === 0
+  ) {
+    throw new Error(
+      "Destinazione non trovata. Prova a inserire un indirizzo più preciso."
+    );
+  }
+
+  const risultato =
+    risultati[0];
+
+  const latitudine =
+    Number(
+      risultato.lat
+    );
+
+  const longitudine =
+    Number(
+      risultato.lon
+    );
+
+  if (
+    !Number.isFinite(
+      latitudine
+    ) ||
+    !Number.isFinite(
+      longitudine
+    )
+  ) {
+    throw new Error(
+      "Le coordinate della destinazione non sono valide."
+    );
+  }
+
+  return {
+    latitudine:
+      latitudine,
+
+    longitudine:
+      longitudine,
+
+    nome:
+      risultato.display_name ||
+      destinazione
+  };
+}
+
+async function richiediPercorso(
+  latitudinePartenza,
+  longitudinePartenza,
+  latitudineArrivo,
+  longitudineArrivo
+) {
+  /*
+   * OSRM richiede le coordinate nel formato:
+   * longitudine,latitudine.
+   */
+  const coordinate =
+    `${longitudinePartenza},${latitudinePartenza};` +
+    `${longitudineArrivo},${latitudineArrivo}`;
+
+  const url =
+    "https://router.project-osrm.org/route/v1/driving/" +
+    coordinate +
+    "?overview=full" +
+    "&geometries=geojson" +
+    "&steps=false";
+
+  const response =
+    await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(
+      "Errore durante il calcolo del percorso."
+    );
+  }
+
+  const result =
+    await response.json();
+
+  if (
+    result.code !== "Ok" ||
+    !Array.isArray(
+      result.routes
+    ) ||
+    result.routes.length === 0
+  ) {
+    throw new Error(
+      "Non è stato possibile trovare un percorso verso la destinazione."
+    );
+  }
+
+  return result.routes[0];
+}
+
+function formattaDistanza(
+  metri
+) {
+  const valore =
+    Number(metri || 0);
+
+  if (valore < 1000) {
+    return (
+      Math.round(valore) +
+      " m"
+    );
+  }
+
+  return (
+    (
+      valore / 1000
+    ).toFixed(1) +
+    " km"
+  );
+}
+
+function formattaDurataPercorso(
+  secondi
+) {
+  const minuti =
+    Math.max(
+      1,
+      Math.round(
+        Number(secondi || 0) /
+        60
+      )
+    );
+
+  if (minuti < 60) {
+    return (
+      minuti +
+      " min"
+    );
+  }
+
+  const ore =
+    Math.floor(
+      minuti / 60
+    );
+
+  const minutiResidui =
+    minuti % 60;
+
+  return (
+    ore +
+    " h " +
+    minutiResidui +
+    " min"
+  );
+}
+
+function rimuoviPercorso() {
+  if (
+    routeLayer &&
+    routeMap
+  ) {
+    routeMap.removeLayer(
+      routeLayer
+    );
+
+    routeLayer = null;
+  }
+
+  if (
+    destinationMarker &&
+    routeMap
+  ) {
+    routeMap.removeLayer(
+      destinationMarker
+    );
+
+    destinationMarker = null;
+  }
+
+  document.getElementById(
+    "destinationInput"
+  ).value = "";
+
+  document.getElementById(
+    "routeSummary"
+  ).classList.remove(
+    "active"
+  );
+
+  document.getElementById(
+    "removeRouteBtn"
+  ).classList.remove(
+    "active"
+  );
+
+  document.getElementById(
+    "routeDistance"
+  ).textContent = "—";
+
+  document.getElementById(
+    "routeDuration"
+  ).textContent = "—";
+
+  nascondiMessaggioDestinazione();
+
+  if (
+    routeMap &&
+    prenotazioneCorrente
+  ) {
+    const latitudineMezzo =
+      Number(
+        prenotazioneCorrente
+          .latitudine
+      );
+
+    const longitudineMezzo =
+      Number(
+        prenotazioneCorrente
+          .longitudine
+      );
+
+    if (
+      Number.isFinite(
+        latitudineMezzo
+      ) &&
+      Number.isFinite(
+        longitudineMezzo
+      )
+    ) {
+      routeMap.setView(
+        [
+          latitudineMezzo,
+          longitudineMezzo
+        ],
+        15
+      );
+    }
+  }
+}
+
+async function calcolaPercorso() {
+  const input =
+    document.getElementById(
+      "destinationInput"
+    );
+
+  const pulsante =
+    document.getElementById(
+      "calculateRouteBtn"
+    );
+
+  const destinazione =
+    input.value.trim();
+
+  if (!destinazione) {
+    mostraMessaggioDestinazione(
+      "Inserisci una destinazione.",
+      "error"
+    );
+
+    return;
+  }
+
+  const latitudinePartenza =
+    Number(
+      prenotazioneCorrente
+        ?.latitudine
+    );
+
+  const longitudinePartenza =
+    Number(
+      prenotazioneCorrente
+        ?.longitudine
+    );
+
+  if (
+    !Number.isFinite(
+      latitudinePartenza
+    ) ||
+    !Number.isFinite(
+      longitudinePartenza
+    )
+  ) {
+    mostraMessaggioDestinazione(
+      "Le coordinate del mezzo non sono disponibili.",
+      "error"
+    );
+
+    return;
+  }
+
+  if (
+    !inizializzaMappaPercorso()
+  ) {
+    return;
+  }
+
+  pulsante.disabled = true;
+
+  pulsante.textContent =
+    "Calcolo in corso...";
+
+  mostraMessaggioDestinazione(
+    "Ricerca della destinazione in corso...",
+    "info"
+  );
+
+  try {
+    const coordinateDestinazione =
+      await cercaCoordinateDestinazione(
+        destinazione
+      );
+
+    mostraMessaggioDestinazione(
+      "Destinazione trovata. Calcolo del percorso...",
+      "info"
+    );
+
+    const percorso =
+      await richiediPercorso(
+        latitudinePartenza,
+        longitudinePartenza,
+        coordinateDestinazione
+          .latitudine,
+        coordinateDestinazione
+          .longitudine
+      );
+
+    rimuoviPercorso();
+
+    destinationMarker =
+      L.marker(
+        [
+          coordinateDestinazione
+            .latitudine,
+
+          coordinateDestinazione
+            .longitudine
+        ]
+      )
+        .addTo(
+          routeMap
+        )
+        .bindPopup(
+          `<strong>Destinazione</strong><br>` +
+          coordinateDestinazione.nome
+        );
+
+    /*
+     * La geometria GeoJSON restituita da OSRM
+     * viene disegnata direttamente sulla mappa.
+     */
+    routeLayer =
+      L.geoJSON(
+        percorso.geometry,
+        {
+          style: {
+            color:
+              "#079669",
+
+            weight:
+              6,
+
+            opacity:
+              0.9
+          }
+        }
+      ).addTo(
+        routeMap
+      );
+
+    const gruppo =
+      L.featureGroup(
+        [
+          startMarker,
+          destinationMarker,
+          routeLayer
+        ]
+      );
+
+    routeMap.fitBounds(
+      gruppo.getBounds(),
+      {
+        padding:
+          [30, 30]
+      }
+    );
+
+    document.getElementById(
+      "routeDistance"
+    ).textContent =
+      formattaDistanza(
+        percorso.distance
+      );
+
+    document.getElementById(
+      "routeDuration"
+    ).textContent =
+      formattaDurataPercorso(
+        percorso.duration
+      );
+
+    document.getElementById(
+      "routeSummary"
+    ).classList.add(
+      "active"
+    );
+
+    document.getElementById(
+      "removeRouteBtn"
+    ).classList.add(
+      "active"
+    );
+
+    mostraMessaggioDestinazione(
+      "Percorso calcolato correttamente verso: " +
+      coordinateDestinazione.nome,
+      "success"
+    );
+  } catch (error) {
+    console.error(
+      "Errore calcolo percorso:",
+      error
+    );
+
+    mostraMessaggioDestinazione(
+      error.message,
+      "error"
+    );
+  } finally {
+    pulsante.disabled = false;
+
+    pulsante.textContent =
+      "Calcola percorso";
+  }
+}
     // =====================================================
     // FOTOCAMERA
     // =====================================================
@@ -3542,6 +4403,33 @@ function lampeggiaLuciMezzo() {
     // =====================================================
     // EVENTI
     // =====================================================
+
+    document.getElementById(
+  "calculateRouteBtn"
+).addEventListener(
+  "click",
+  calcolaPercorso
+);
+
+document.getElementById(
+  "destinationInput"
+).addEventListener(
+  "keydown",
+  (event) => {
+    if (
+      event.key === "Enter"
+    ) {
+      calcolaPercorso();
+    }
+  }
+);
+
+document.getElementById(
+  "removeRouteBtn"
+).addEventListener(
+  "click",
+  rimuoviPercorso
+);
 
     document.getElementById(
       "avviaCameraBtn"

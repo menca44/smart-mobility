@@ -776,11 +776,13 @@ p.data_ora_inizio_pausa,
 p.data_ora_fine_ultima_pausa,
 p.secondi_pausa_totali,
         m.tipo,
-        m.modello,
-        m.stato AS stato_mezzo,
-        m.batteria,
-        m.area,
-        m.tariffa_minuto
+m.modello,
+m.stato AS stato_mezzo,
+m.batteria,
+m.area,
+m.tariffa_minuto,
+m.latitudine,
+m.longitudine
       FROM prenotazioni p
       JOIN mezzi m
         ON p.id_mezzo = m.id_mezzo
@@ -923,11 +925,13 @@ app.get(
         p.data_ora_scadenza,
         p.data_ora_sblocco,
         m.tipo,
-        m.modello,
-        m.area,
-        m.batteria,
-        m.tariffa_minuto,
-        m.stato AS stato_mezzo
+m.modello,
+m.area,
+m.batteria,
+m.tariffa_minuto,
+m.latitudine,
+m.longitudine,
+m.stato AS stato_mezzo
       FROM prenotazioni p
       JOIN mezzi m
         ON p.id_mezzo = m.id_mezzo
