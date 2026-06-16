@@ -383,6 +383,15 @@
     .monopattino {
       background: #facc15;
     }
+    /* Colore delle aree dedicate al parcheggio. */
+.parking-area {
+  background: #2563eb;
+}
+
+/* Colore delle aree dedicate alla ricarica. */
+.charging-area {
+  background: #f97316;
+}
 
     .filter-reset {
       width: 100%;
@@ -1563,6 +1572,15 @@
             Monopattini
           </button>
         </div>
+        <div class="legend-item">
+  <span class="legend-dot parking-area"></span>
+  Area parcheggio
+</div>
+
+<div class="legend-item">
+  <span class="legend-dot charging-area"></span>
+  Area ricarica
+</div>
 
         <button id="resetFilterBtn" class="filter-reset" type="button">
           Mostra tutti i mezzi
@@ -1812,12 +1830,64 @@ try {
     }).addTo(tarantoMap);
 
     const vehiclesLayer = L.layerGroup().addTo(tarantoMap);
+    /*
+ * Livello separato per le aree di parcheggio
+ * e di ricarica dei mezzi.
+ */
+const serviceAreasLayer =
+  L.layerGroup().addTo(tarantoMap);
 
     let searchResultMarker = null;
     let mezziDisponibili = [];
     let filtriAttivi = [];
     let areaRicercaAttiva = false;
     let boundsRicercaAttivi = null;
+    /*
+ * Aree dimostrative di parcheggio e ricarica.
+ * Le coordinate possono essere modificate successivamente.
+ */
+const areeServizio = [
+  {
+    id: 1,
+    nome: "Parcheggio Borgo",
+    tipo: "parcheggio",
+    latitudine: 40.4703,
+    longitudine: 17.2408,
+    raggio: 110,
+    posti_totali: 18,
+    posti_disponibili: 7
+  },
+  {
+    id: 2,
+    nome: "Parcheggio Lungomare",
+    tipo: "parcheggio",
+    latitudine: 40.4661,
+    longitudine: 17.2358,
+    raggio: 100,
+    posti_totali: 14,
+    posti_disponibili: 5
+  },
+  {
+    id: 3,
+    nome: "Stazione di ricarica Arsenale",
+    tipo: "ricarica",
+    latitudine: 40.4728,
+    longitudine: 17.2498,
+    raggio: 90,
+    posti_totali: 10,
+    posti_disponibili: 4
+  },
+  {
+    id: 4,
+    nome: "Stazione di ricarica Centro",
+    tipo: "ricarica",
+    latitudine: 40.4648,
+    longitudine: 17.2465,
+    raggio: 85,
+    posti_totali: 8,
+    posti_disponibili: 3
+  }
+];
 
     function createVehicleIcon(color, emoji) {
       return L.divIcon({
@@ -1954,6 +2024,72 @@ try {
         filtro geografico attivo sulla zona visibile della mappa. Mezzi trovati: ${numeroMezzi}.
       `;
     }
+    // =====================================================
+// AREE DI PARCHEGGIO E RICARICA
+// =====================================================
+
+function renderizzaAreeServizio() {
+  serviceAreasLayer.clearLayers();
+
+  areeServizio.forEach((area) => {
+    const isParcheggio =
+      area.tipo === "parcheggio";
+
+    const colore =
+      isParcheggio
+        ? "#2563eb"
+        : "#f97316";
+
+    const titoloTipo =
+      isParcheggio
+        ? "Area parcheggio"
+        : "Area ricarica";
+
+    const icona =
+      isParcheggio
+        ? "🅿️"
+        : "🔋";
+
+    const zona = L.circle(
+      [
+        area.latitudine,
+        area.longitudine
+      ],
+      {
+        radius: area.raggio,
+        color: colore,
+        weight: 3,
+        opacity: 0.9,
+        fillColor: colore,
+        fillOpacity: 0.22
+      }
+    );
+
+    zona.bindPopup(`
+      <strong class="popup-title">
+        ${icona} ${area.nome}
+      </strong>
+
+      Tipo: ${titoloTipo}<br>
+
+      Posti totali:
+      ${area.posti_totali}<br>
+
+      Posti disponibili:
+      <strong>
+        ${area.posti_disponibili}
+      </strong><br>
+
+      ${
+        isParcheggio
+          ? "Zona autorizzata per il rilascio del mezzo."
+          : "Zona attrezzata per la ricarica dei mezzi elettrici."
+      }
+    `);
+
+    serviceAreasLayer.addLayer(zona);
+  });
+}
 
     async function caricaMezziDalDatabase() {
       try {
@@ -2777,8 +2913,13 @@ try {
       tarantoMap.invalidateSize();
     });
 
-    caricaMezziDalDatabase();
-    mostraNewsletterIniziale();
+    /*
+ * Mostra prima le aree di servizio
+ * e poi carica i mezzi dal database.
+ */
+renderizzaAreeServizio();
+caricaMezziDalDatabase();
+mostraNewsletterIniziale();
   </script>
 
 </body>
