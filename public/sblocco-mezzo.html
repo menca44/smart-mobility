@@ -893,6 +893,130 @@
 .pause-cooldown.active {
   display: block;
 }
+/* =====================================================
+   POPUP LAMPEGGIO LUCI
+   ===================================================== */
+
+.lights-button {
+  margin-top: 14px;
+
+  background: #facc15;
+  color: #5f4b00;
+
+  border: 1px solid #e8c50f;
+  box-shadow: 0 12px 24px rgba(250, 204, 21, 0.24);
+}
+
+.lights-button:hover {
+  background: #eab308;
+  color: #ffffff;
+}
+
+.lights-popup-overlay {
+  position: fixed;
+  inset: 0;
+
+  display: none;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+
+  background: rgba(5, 20, 16, 0.58);
+  backdrop-filter: blur(7px);
+
+  z-index: 5000;
+}
+
+.lights-popup-overlay.active {
+  display: flex;
+}
+
+.lights-popup {
+  width: min(420px, 100%);
+  padding: 34px 28px;
+
+  border-radius: 28px;
+  background: #ffffff;
+
+  text-align: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+
+  animation: lightsPopupIn 0.25s ease;
+}
+
+@keyframes lightsPopupIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.lights-popup-icon {
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 20px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+  background: #fff8c5;
+  border: 1px solid #f5dc68;
+
+  font-size: 46px;
+
+  animation: lightsFlash 0.65s infinite alternate;
+}
+
+@keyframes lightsFlash {
+  from {
+    opacity: 0.45;
+    transform: scale(0.94);
+    box-shadow: 0 0 0 rgba(250, 204, 21, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.05);
+    box-shadow: 0 0 38px rgba(250, 204, 21, 0.8);
+  }
+}
+
+.lights-popup h2 {
+  margin: 0 0 10px;
+
+  color: var(--testo);
+  font-size: 25px;
+}
+
+.lights-popup p {
+  margin: 0;
+
+  color: var(--grigio);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.lights-popup-countdown {
+  display: inline-block;
+  margin-top: 18px;
+  padding: 8px 14px;
+
+  border-radius: 999px;
+  background: #fff8df;
+  color: #785d0a;
+
+  font-size: 14px;
+  font-weight: 900;
+}
 
     @media (max-width: 850px) {
       .layout {
@@ -1272,6 +1396,13 @@
     </button>
 
   </div>
+  <button
+  id="lampeggiaLuciBtn"
+  class="btn lights-button"
+  type="button"
+>
+  💡 Fai lampeggiare le luci
+</button>
 </div>
       </section>
 
@@ -3265,6 +3396,90 @@ document.getElementById(
   "click",
   terminaCorsa
 );
+document.getElementById(
+  "lampeggiaLuciBtn"
+).addEventListener(
+  "click",
+  lampeggiaLuciMezzo
+);
+// =====================================================
+// LAMPEGGIO DELLE LUCI
+// =====================================================
+
+let timerLampeggioLuci = null;
+
+function lampeggiaLuciMezzo() {
+  const pulsante =
+    document.getElementById(
+      "lampeggiaLuciBtn"
+    );
+
+  const popup =
+    document.getElementById(
+      "lightsPopupOverlay"
+    );
+
+  const countdown =
+    document.getElementById(
+      "lightsPopupCountdown"
+    );
+
+  /*
+   * Impedisce di avviare più lampeggi contemporaneamente.
+   */
+  if (timerLampeggioLuci) {
+    return;
+  }
+
+  let secondiRimanenti = 5;
+
+  pulsante.disabled = true;
+  pulsante.textContent =
+    "💡 Luci in lampeggio...";
+
+  popup.classList.add(
+    "active"
+  );
+
+  countdown.textContent =
+    secondiRimanenti +
+    " secondi";
+
+  timerLampeggioLuci =
+    setInterval(
+      () => {
+        secondiRimanenti -= 1;
+
+        if (secondiRimanenti > 0) {
+          countdown.textContent =
+            secondiRimanenti === 1
+              ? "1 secondo"
+              : secondiRimanenti +
+                " secondi";
+
+          return;
+        }
+
+        clearInterval(
+          timerLampeggioLuci
+        );
+
+        timerLampeggioLuci =
+          null;
+
+        popup.classList.remove(
+          "active"
+        );
+
+        pulsante.disabled =
+          false;
+
+        pulsante.textContent =
+          "💡 Fai lampeggiare le luci";
+      },
+      1000
+    );
+}
     // =====================================================
     // EVENTI
     // =====================================================
@@ -3327,6 +3542,22 @@ document.getElementById(
     fermaTimerPausa();
     fermaTimerCooldown();
 
+    /*
+     * Ferma anche il timer del popup
+     * delle luci, se è ancora attivo.
+     */
+    if (timerLampeggioLuci) {
+      clearInterval(
+        timerLampeggioLuci
+      );
+
+      timerLampeggioLuci = null;
+    }
+
+    /*
+     * Arresta la fotocamera quando
+     * l'utente lascia la pagina.
+     */
     if (
       lettoreQr &&
       fotocameraAttiva
@@ -3347,6 +3578,32 @@ document.getElementById(
       }
     );
   </script>
+<div
+  id="lightsPopupOverlay"
+  class="lights-popup-overlay"
+>
+  <div class="lights-popup">
 
+    <div class="lights-popup-icon">
+      💡
+    </div>
+
+    <h2>
+      Il mezzo sta lampeggiando
+    </h2>
+
+    <p>
+      Le luci del mezzo sono state attivate per aiutarti a individuarlo.
+    </p>
+
+    <span
+      id="lightsPopupCountdown"
+      class="lights-popup-countdown"
+    >
+      5 secondi
+    </span>
+
+  </div>
+</div>
 </body>
 </html>
