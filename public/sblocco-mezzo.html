@@ -896,7 +896,41 @@
 /* =====================================================
    POPUP LAMPEGGIO LUCI
    ===================================================== */
+.lights-pre-unlock-area {
+  margin-bottom: 20px;
+  padding: 18px;
 
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+
+  border-radius: 18px;
+  background: #fff8df;
+  border: 1px solid #f0dfa4;
+}
+
+.lights-pre-unlock-content h3 {
+  margin: 0 0 6px;
+
+  color: #785d0a;
+  font-size: 17px;
+}
+
+.lights-pre-unlock-content p {
+  margin: 0;
+
+  color: #876d20;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.lights-pre-unlock-area .lights-button {
+  width: auto;
+  min-width: 220px;
+  margin-top: 0;
+  flex-shrink: 0;
+}
 .lights-button {
   margin-top: 14px;
 
@@ -1033,6 +1067,15 @@
     }
 
     @media (max-width: 560px) {
+    .lights-pre-unlock-area {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.lights-pre-unlock-area .lights-button {
+  width: 100%;
+  min-width: 0;
+}
         .ride-actions {
   grid-template-columns: 1fr;
 }
@@ -1191,10 +1234,29 @@
             </p>
           </div>
         </div>
+        <div class="lights-pre-unlock-area">
+  <div class="lights-pre-unlock-content">
+    <h3>Non riesci a individuare il mezzo?</h3>
+
+    <p>
+      Fai lampeggiare le luci del mezzo prenotato per riconoscerlo
+      più facilmente prima dello sblocco.
+    </p>
+  </div>
+
+  <button
+    id="lampeggiaLuciBtn"
+    class="btn lights-button"
+    type="button"
+  >
+    💡 Fai lampeggiare le luci
+  </button>
+</div>
 
         <div id="messaggioPagina" class="message"></div>
 
         <div id="areaSblocco">
+          
 
           <div class="reader-wrapper">
             <div
@@ -1396,13 +1458,7 @@
     </button>
 
   </div>
-  <button
-  id="lampeggiaLuciBtn"
-  class="btn lights-button"
-  type="button"
->
-  💡 Fai lampeggiare le luci
-</button>
+  
 </div>
       </section>
 
@@ -1782,6 +1838,9 @@ const ATTESA_NUOVA_PAUSA_SECONDI =
         renderizzaPrenotazione(
           prenotazioneCorrente
         );
+        document.getElementById(
+  "lampeggiaLuciBtn"
+).disabled = false;
       } catch (error) {
         console.error(
           "Errore caricamento prenotazione:",
